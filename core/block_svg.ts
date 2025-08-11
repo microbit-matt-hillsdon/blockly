@@ -20,7 +20,7 @@ import * as browserEvents from './browser_events.js';
 import {BlockCopyData, BlockPaster} from './clipboard/block_paster.js';
 import * as common from './common.js';
 import {config} from './config.js';
-import type {Connection} from './connection.js';
+import {Connection} from './connection.js';
 import {ConnectionType} from './connection_type.js';
 import * as constants from './constants.js';
 import * as ContextMenu from './contextmenu.js';
@@ -218,45 +218,10 @@ export class BlockSvg
     // The page-wide unique ID of this Block used for focusing.
     svgPath.id = idGenerator.getNextUniqueId();
 
-    aria.setState(svgPath, aria.State.ROLEDESCRIPTION, 'block');
-    aria.setRole(svgPath, aria.Role.TREEITEM);
     svgPath.tabIndex = -1;
     this.currentConnectionCandidate = null;
 
     this.doInit_();
-
-    // Note: This must be done after initialization of the block's fields.
-    this.recomputeAriaLabel();
-  }
-
-  private recomputeAriaLabel() {
-    aria.setState(
-      this.getFocusableElement(),
-      aria.State.LABEL,
-      this.computeAriaLabel(),
-    );
-  }
-
-  private computeAriaLabel(): string {
-    // Guess the block's aria label based on its field labels.
-    if (this.isShadow()) {
-      // TODO: Shadows may have more than one field.
-      // Shadow blocks are best represented directly by their field since they
-      // effectively operate like a field does for keyboard navigation purposes.
-      const field = Array.from(this.getFields())[0];
-      return (
-        aria.getState(field.getFocusableElement(), aria.State.LABEL) ??
-        'Unknown?'
-      );
-    }
-
-    const fieldLabels = [];
-    for (const field of this.getFields()) {
-      if (field instanceof FieldLabel) {
-        fieldLabels.push(field.getText());
-      }
-    }
-    return fieldLabels.join(' ');
   }
 
   collectSiblingBlocks(surroundParent: BlockSvg | null): BlockSvg[] {
@@ -409,8 +374,6 @@ export class BlockSvg
     }
 
     this.applyColour();
-
-    this.workspace.recomputeAriaTree();
   }
 
   /**
@@ -1721,6 +1684,8 @@ export class BlockSvg
    * settings.
    */
   render() {
+    this.recomputeAriaLabel();
+
     this.queueRender();
     renderManagement.triggerQueuedRenders();
   }
@@ -1732,6 +1697,8 @@ export class BlockSvg
    * @internal
    */
   renderEfficiently() {
+    this.recomputeAriaLabel();
+
     dom.startTextWidthCache();
 
     if (this.isCollapsed()) {
@@ -1746,6 +1713,51 @@ export class BlockSvg
     this.tightenChildrenEfficiently();
 
     dom.stopTextWidthCache();
+  }
+
+  private recomputeAriaLabel() {
+    const element = this.getFocusableElement();
+    element.role = 'application';
+
+    // TODO, e.g.:
+    // {0} fields and value inputs; 2 statement inputs
+    const description = 'block';
+    element.ariaRoleDescription = description;
+    const ariaLabel = buildAriaLabel(this);
+
+    const parent = this.getParent();
+    if (!this.outputConnection && this.getTopStackBlock() === this && parent) {
+      // These aren't intended to be used like this. But there's nothing equivalent
+      // and it's easy to imagine better versions.
+
+      let inputName = parent.getInputWithBlock(this)?.name;
+      inputName =
+        {
+          'DO0': 'if branch',
+          'DO1': 'else if branch',
+        }[inputName ?? ''] ?? 'statements';
+      const level = this.getLevel();
+      if (level === 1) {
+        element.ariaLabel = `${ariaLabel} (top-level)`;
+      } else {
+        element.ariaLabel = `${inputName ?? 'chidren'}: ${ariaLabel}`;
+      }
+    } else {
+      element.ariaLabel = ariaLabel;
+    }
+  }
+
+  private getLevel() {
+    let level = 0;
+    for (
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      let block: Block | null = this;
+      block !== null;
+      block = block.getParent()
+    ) {
+      level++;
+    }
+    return level;
   }
 
   /**
@@ -1971,17 +1983,40 @@ export class BlockSvg
         announcementContext.push('to', 'child');
       }
       if (surroundParent) {
-        announcementContext.push('of', surroundParent.computeAriaLabel());
+        announcementContext.push(
+          'of',
+          surroundParent.getFocusableElement().ariaLabel!,
+        );
       }
 
       // If the block is currently being moved, announce the new block label so that the user understands where it is now.
-      // TODO: Figure out how much recomputeAriaTreeItemDetailsRecursively needs to anticipate position if it won't be reannounced, and how much of that context should be included in the liveannouncement.
       aria.announceDynamicAriaState(announcementContext.join(' '));
     } else if (newLoc) {
+      // TODO: This is too verbose as there are too many such messages.
       // The block is being freely dragged.
-      aria.announceDynamicAriaState(
-        `Moving unconstrained to coordinate x ${Math.round(newLoc.x)} and y ${Math.round(newLoc.y)}.`,
-      );
+      // aria.announceDynamicAriaState(
+      //  `Moving unconstrained to coordinate x ${Math.round(newLoc.x)} and y ${Math.round(newLoc.y)}.`,
+      // );
     }
   }
+}
+
+function buildAriaLabel(block: BlockSvg): string {
+  return block.inputList
+    .flatMap((input) => {
+      const fields = input.fieldRow.map((field) => {
+        return [field.getText() ?? field.getValue()];
+      });
+      if (
+        input.connection &&
+        input.connection.type === ConnectionType.INPUT_VALUE
+      ) {
+        const targetBlock = input.connection.targetBlock();
+        if (targetBlock) {
+          return [...fields, buildAriaLabel(targetBlock as BlockSvg)];
+        }
+      }
+      return fields;
+    })
+    .join(' ');
 }

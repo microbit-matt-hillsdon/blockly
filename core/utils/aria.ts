@@ -51,6 +51,8 @@ export enum Role {
   BUTTON = 'button',
   CHECKBOX = 'checkbox',
   TEXTBOX = 'textbox',
+  APPLICATION = 'application',
+  HEADING = 'heading',
 }
 
 /**

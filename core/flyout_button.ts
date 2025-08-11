@@ -118,8 +118,13 @@ export class FlyoutButton
       this.workspace.getCanvas(),
     );
 
-    aria.setRole(this.svgGroup, aria.Role.BUTTON);
-    aria.setState(this.svgGroup, aria.State.LABEL, 'Button');
+    if (this.isFlyoutLabel) {
+      aria.setRole(this.svgGroup, aria.Role.HEADING);
+      // TODO: unclear level? provided by creator?
+      aria.setState(this.svgGroup, aria.State.LEVEL, 2);
+    } else {
+      aria.setRole(this.svgGroup, aria.Role.BUTTON);
+    }
 
     let shadow;
     if (!this.isFlyoutLabel) {
