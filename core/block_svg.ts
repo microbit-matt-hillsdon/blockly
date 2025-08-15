@@ -224,9 +224,6 @@ export class BlockSvg
     this.currentConnectionCandidate = null;
 
     this.doInit_();
-
-    // Note: This must be done after initialization of the block's fields.
-    this.recomputeAriaLabel();
   }
 
   private recomputeAriaLabel() {
@@ -238,25 +235,7 @@ export class BlockSvg
   }
 
   private computeAriaLabel(): string {
-    // Guess the block's aria label based on its field labels.
-    if (this.isShadow()) {
-      // TODO: Shadows may have more than one field.
-      // Shadow blocks are best represented directly by their field since they
-      // effectively operate like a field does for keyboard navigation purposes.
-      const field = Array.from(this.getFields())[0];
-      return (
-        aria.getState(field.getFocusableElement(), aria.State.LABEL) ??
-        'Unknown?'
-      );
-    }
-
-    const fieldLabels = [];
-    for (const field of this.getFields()) {
-      if (field instanceof FieldLabel) {
-        fieldLabels.push(field.getText());
-      }
-    }
-    return fieldLabels.join(' ');
+    return buildAriaLabel(this);
   }
 
   collectSiblingBlocks(surroundParent: BlockSvg | null): BlockSvg[] {
@@ -1721,6 +1700,8 @@ export class BlockSvg
    * settings.
    */
   render() {
+    this.recomputeAriaLabel();
+
     this.queueRender();
     renderManagement.triggerQueuedRenders();
   }
@@ -1732,6 +1713,8 @@ export class BlockSvg
    * @internal
    */
   renderEfficiently() {
+    this.recomputeAriaLabel();
+
     dom.startTextWidthCache();
 
     if (this.isCollapsed()) {
@@ -1984,4 +1967,24 @@ export class BlockSvg
       );
     }
   }
+}
+
+function buildAriaLabel(block: BlockSvg): string {
+  return block.inputList
+    .flatMap((input) => {
+      const fields = input.fieldRow.map((field) => {
+        return [field.getText() ?? field.getValue()];
+      });
+      if (
+        input.connection &&
+        input.connection.type === ConnectionType.INPUT_VALUE
+      ) {
+        const targetBlock = input.connection.targetBlock();
+        if (targetBlock) {
+          return [...fields, buildAriaLabel(targetBlock as BlockSvg)];
+        }
+      }
+      return fields;
+    })
+    .join(' ');
 }
