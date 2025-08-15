@@ -197,14 +197,6 @@ export class FieldDropdown extends Field<string> {
       dom.addClass(this.fieldGroup_, 'blocklyField');
       dom.addClass(this.fieldGroup_, 'blocklyDropdownField');
     }
-
-    const element = this.getFocusableElement();
-    aria.setRole(element, aria.Role.LISTBOX);
-    aria.setState(
-      element,
-      aria.State.LABEL,
-      this.name ? `Item ${this.name}` : 'Item',
-    );
   }
 
   /**
@@ -507,6 +499,11 @@ export class FieldDropdown extends Field<string> {
 
   /** Draws the border with the correct width. */
   protected override render_() {
+    const element = this.getFocusableElement();
+    aria.setRole(element, aria.Role.BUTTON);
+    const label = `${this.value_}, ${this.name} dropdown`;
+    aria.setState(element, aria.State.LABEL, label);
+
     // Hide both elements.
     this.getTextContent().nodeValue = '';
     this.imageElement!.style.display = 'none';
