@@ -344,6 +344,8 @@ export class BlockSvg
     if (!svg.parentNode) {
       this.workspace.getCanvas().appendChild(svg);
     }
+    // Note: This must be done after initialization of the block's fields.
+    this.recomputeAriaLabel();
     this.initialized = true;
   }
 
