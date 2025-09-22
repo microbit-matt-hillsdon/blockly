@@ -28,6 +28,7 @@ import * as internalConstants from './internal_constants.js';
 import type {Menu} from './menu.js';
 import type {MenuItem} from './menuitem.js';
 import {Msg} from './msg.js';
+import {aria} from './utils.js';
 import * as dom from './utils/dom.js';
 import * as parsing from './utils/parsing.js';
 import {Size} from './utils/size.js';
@@ -147,6 +148,13 @@ export class FieldVariable extends FieldDropdown {
     );
     // Don't call setValue because we don't want to cause a rerender.
     this.doValueUpdate_(variable.getId());
+  }
+
+  protected override computeAriaLabel() {
+    const element = this.getFocusableElement();
+    aria.setRole(element, aria.Role.BUTTON);
+    const label = `${this.variable?.getName() ?? this.defaultVariableName}, variable dropdown`;
+    aria.setState(element, aria.State.LABEL, label);
   }
 
   override initView() {

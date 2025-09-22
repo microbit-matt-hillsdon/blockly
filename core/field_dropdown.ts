@@ -497,12 +497,16 @@ export class FieldDropdown extends Field<string> {
     }
   }
 
-  /** Draws the border with the correct width. */
-  protected override render_() {
+  protected computeAriaLabel() {
     const element = this.getFocusableElement();
     aria.setRole(element, aria.Role.BUTTON);
     const label = `${this.value_}, ${this.name} dropdown`;
     aria.setState(element, aria.State.LABEL, label);
+  }
+
+  /** Draws the border with the correct width. */
+  protected override render_() {
+    this.computeAriaLabel();
 
     // Hide both elements.
     this.getTextContent().nodeValue = '';
