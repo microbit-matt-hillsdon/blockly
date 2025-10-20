@@ -15,9 +15,9 @@
 import '../field_label.js';
 
 import type {Block} from '../block.js';
-import type {BlockSvg} from '../block_svg.js';
+import {BlockSvg} from '../block_svg.js';
 import type {Connection} from '../connection.js';
-import type {ConnectionType} from '../connection_type.js';
+import {ConnectionType} from '../connection_type.js';
 import type {Field} from '../field.js';
 import * as fieldRegistry from '../field_registry.js';
 import {RenderedConnection} from '../rendered_connection.js';
@@ -323,10 +323,20 @@ export class Input {
       .trim();
     if (!fieldRowLabel) {
       const inputs = this.getSourceBlock().inputList;
-      const index = inputs.indexOf(this);
-      if (index > 0) {
-        return inputs[index - 1].getFieldRowLabel();
-      }
+
+      return inputs
+        .flatMap((input) => {
+          const fields = input.fieldRow.map((field) => {
+            if (!field.isVisible()) return [];
+            return [
+              field.getLabelForBlockOutput() ??
+                field.getText() ??
+                field.getValue(),
+            ];
+          });
+          return fields;
+        })
+        .join(' ');
     }
     return fieldRowLabel;
   }
