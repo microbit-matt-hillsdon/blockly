@@ -2066,7 +2066,11 @@ function buildBlockSummary(block: BlockSvg): BlockSummary {
           if (field.EDITABLE && !field.isFullBlockField() && !isNestedInput) {
             inputCount++;
           }
-          return [field.getText() ?? field.getValue()];
+          return [
+            field.getLabelForBlockOutput() ??
+              field.getText() ??
+              field.getValue(),
+          ];
         });
         if (
           input.isVisible() &&

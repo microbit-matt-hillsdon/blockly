@@ -169,6 +169,9 @@ export abstract class Field<T = any>
   /** The element the click handler is bound to. */
   protected clickTarget_: Element | null = null;
 
+  /** Used as an override for label name for aria. */
+  private ariaLabelOverride: string | null = null;
+
   /**
    * The prefix field.
    *
@@ -273,6 +276,7 @@ export abstract class Field<T = any>
 
   getAriaName(): string | null {
     return (
+      this.getAriaLabelOverride() ??
       this.config?.ariaName ??
       this.config?.name ??
       this.config?.type ??
@@ -280,6 +284,18 @@ export abstract class Field<T = any>
       this.name ??
       null
     );
+  }
+
+  getAriaLabelOverride(): string | null {
+    return this.ariaLabelOverride;
+  }
+
+  setAriaLabelOverride(value: string): void {
+    this.ariaLabelOverride = value;
+  }
+
+  getLabelForBlockOutput(): string | null {
+    return null;
   }
 
   /**
