@@ -67,6 +67,11 @@ import {FlyoutItemInfo} from './utils/toolbox.js';
 import type {Workspace} from './workspace.js';
 import type {WorkspaceSvg} from './workspace_svg.js';
 
+interface BlockAria {
+  label: string;
+  description: string;
+}
+
 /**
  * Class for a block's SVG representation.
  * Not normally called directly, workspace.newBlock() is preferred.
@@ -237,17 +242,19 @@ export class BlockSvg
       if (field.isFullBlockField() && field.isCurrentlyEditable()) return;
     }
 
+    const {label, description} = this.computerAriaLabelDesc();
+    aria.setState(this.getFocusableElement(), aria.State.LABEL, label);
     aria.setState(
-      this.getFocusableElement(),
-      aria.State.LABEL,
-      this.computeAriaLabel(),
+      this.pathObject.svgPath,
+      aria.State.ROLEDESCRIPTION,
+      description,
     );
   }
 
-  private computeAriaLabel(): string {
+  private computerAriaLabelDesc(): BlockAria {
     const {blockSummary, inputCount} = buildBlockSummary(this);
     const inputSummary = inputCount
-      ? ` ${inputCount} ${inputCount > 1 ? 'inputs' : 'input'}`
+      ? `${inputCount} ${inputCount > 1 ? 'inputs' : 'input'}`
       : '';
 
     let currentBlock: BlockSvg | null = null;
@@ -312,18 +319,16 @@ export class BlockSvg
       }
     }
 
-    return prefix + blockSummary + ', ' + additionalInfo;
+    return {
+      label: prefix + blockSummary,
+      description: additionalInfo,
+    };
   }
 
   private computeAriaRole() {
     if (this.workspace.isFlyout) {
       aria.setRole(this.pathObject.svgPath, aria.Role.TREEITEM);
     } else {
-      aria.setState(
-        this.pathObject.svgPath,
-        aria.State.ROLEDESCRIPTION,
-        'block',
-      );
       aria.setRole(this.pathObject.svgPath, aria.Role.FIGURE);
     }
   }
@@ -2031,7 +2036,7 @@ export class BlockSvg
         announcementContext.push('to', 'child');
       }
       if (surroundParent) {
-        announcementContext.push('of', surroundParent.computeAriaLabel());
+        announcementContext.push('of', surroundParent.computerAriaLabelDesc());
       }
 
       // If the block is currently being moved, announce the new block label so that the user understands where it is now.
