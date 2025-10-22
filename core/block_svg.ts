@@ -237,11 +237,25 @@ export class BlockSvg
       if (field.isFullBlockField() && field.isCurrentlyEditable()) return;
     }
 
+    if (this.isSimpleReporterShadowBlockWithFullBlockField()) return;
+
     aria.setState(
       this.getFocusableElement(),
       aria.State.LABEL,
       this.computeAriaLabel(),
     );
+  }
+
+  private isSimpleReporterShadowBlockWithFullBlockField(): boolean {
+    if (this.isSimpleReporter() && this.isShadow()) {
+      const fields = Array.from(this.getFields());
+      for (let i = 0; i < fields.length; i++) {
+        if (fields[i].isFullBlockField() && fields[i].isCurrentlyEditable()) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private computeAriaLabel(): string {
@@ -268,7 +282,7 @@ export class BlockSvg
 
     let blockTypeText = 'block';
     if (this.isShadow()) {
-      blockTypeText = 'replacable block';
+      blockTypeText = 'replaceable block';
     } else if (this.outputConnection) {
       blockTypeText = 'input block';
     } else if (this.statementInputCount) {
@@ -1964,6 +1978,16 @@ export class BlockSvg
   /** See IFocusableNode.getFocusableElement. */
   getFocusableElement(): HTMLElement | SVGElement {
     if (this.isSimpleReporter()) {
+      // If the block is a shadow block, text could preceed or come after the
+      // full block field.
+      if (this.isShadow()) {
+        const fields = Array.from(this.getFields());
+        for (let i = 0; i < fields.length; i++) {
+          if (fields[i].isFullBlockField() && fields[i].isCurrentlyEditable()) {
+            return fields[i].getFocusableElement();
+          }
+        }
+      }
       const field = Array.from(this.getFields())[0];
       if (field && field.isFullBlockField() && field.isCurrentlyEditable()) {
         return field.getFocusableElement();
