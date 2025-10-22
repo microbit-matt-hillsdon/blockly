@@ -346,16 +346,18 @@ export class LineCursor extends Marker {
             if (candidate.outputConnection?.targetBlock()?.getInputsInline()) {
               // This is a hack to allow visiting input connections in if statements
               // in MakeCode where the inputs are inline (mutators).
-              // Don't go to the first input on the if row when moving down.
-              // See https://github.com/google/blockly-keyboard-experimentation/issues/762
               if (current.type === 'controls_if') {
-                if (
-                  direction === NavigationDirection.NEXT &&
-                  current.inputList[0].connection?.targetBlock() === candidate
-                ) {
-                  return false;
+                if (direction === NavigationDirection.NEXT) {
+                  // Don't go to the first input on the if row when moving down.
+                  // See https://github.com/google/blockly-keyboard-experimentation/issues/762
+                  const target = current.inputList[0].connection?.targetBlock();
+                  if (candidate === target) {
+                    return false;
+                  }
                 }
-                return true;
+                return current.inputList.some(
+                  (i) => i.connection?.targetBlock() === candidate,
+                );
               }
             }
 
@@ -377,7 +379,19 @@ export class LineCursor extends Marker {
             // in common, or if they have a shared parent with external inputs.
             const result =
               !sharedParents.size ||
-              sharedParents.values().some((block) => !block.getInputsInline());
+              sharedParents.values().some((block) => {
+                // This is a hack to allow visiting input connections in if statements
+                // in MakeCode where the inputs are inline (mutators).
+                if (
+                  block.type === 'controls_if' &&
+                  block.inputList.some(
+                    (i) => i.connection?.targetBlock() === candidate,
+                  )
+                ) {
+                  return true;
+                }
+                return !block.getInputsInline();
+              });
             return result;
           }
 
