@@ -602,10 +602,6 @@ export class FieldVariable extends FieldDropdown {
       options[i] = [
         variableModelList[i].getName(),
         variableModelList[i].getId(),
-        Msg['ARIA_LABEL_FOR_VARIABLE_NAME'].replace(
-          '%1',
-          variableModelList[i].getName(),
-        ),
       ];
     }
     options.push([

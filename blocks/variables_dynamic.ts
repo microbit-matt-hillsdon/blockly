@@ -35,6 +35,7 @@ export const blocks = createBlockDefinitionsFromJsonArray([
       {
         'type': 'field_variable',
         'name': 'VAR',
+        'ariaName': 'variable',
         'variable': '%{BKY_VARIABLES_DEFAULT_NAME}',
       },
     ],
@@ -52,6 +53,7 @@ export const blocks = createBlockDefinitionsFromJsonArray([
       {
         'type': 'field_variable',
         'name': 'VAR',
+        'ariaName': 'variable',
         'variable': '%{BKY_VARIABLES_DEFAULT_NAME}',
       },
       {

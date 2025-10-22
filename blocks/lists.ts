@@ -68,6 +68,7 @@ export const blocks = createBlockDefinitionsFromJsonArray([
       {
         'type': 'input_value',
         'name': 'LIST',
+        'ariaName': 'list',
         'check': 'Array',
       },
     ],
@@ -947,6 +948,7 @@ blocks['lists_sort'] = {
         {
           'type': 'input_value',
           'name': 'LIST',
+          'ariaName': 'list',
           'check': 'Array',
         },
       ],

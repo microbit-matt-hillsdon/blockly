@@ -31,6 +31,7 @@ export const blocks = createBlockDefinitionsFromJsonArray([
       {
         'type': 'field_number',
         'name': 'NUM',
+        'ariaName': 'number',
         'value': 0,
       },
     ],
@@ -54,7 +55,7 @@ export const blocks = createBlockDefinitionsFromJsonArray([
       {
         'type': 'field_dropdown',
         'name': 'OP',
-        'ariaName': 'Arithmetic operation',
+        'ariaName': 'operator',
         'options': [
           ['%{BKY_MATH_ADDITION_SYMBOL}', 'ADD', 'Plus'],
           ['%{BKY_MATH_SUBTRACTION_SYMBOL}', 'MINUS', 'Minus'],

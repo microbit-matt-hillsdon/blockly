@@ -35,6 +35,7 @@ export const blocks = createBlockDefinitionsFromJsonArray([
       {
         'type': 'field_dropdown',
         'name': 'BOOL',
+        'ariaName': 'boolean',
         'options': [
           ['%{BKY_LOGIC_BOOLEAN_TRUE}', 'TRUE'],
           ['%{BKY_LOGIC_BOOLEAN_FALSE}', 'FALSE'],
@@ -117,6 +118,7 @@ export const blocks = createBlockDefinitionsFromJsonArray([
       {
         'type': 'field_dropdown',
         'name': 'OP',
+        'ariaName': 'operator',
         'options': [
           ['=', 'EQ'],
           ['\u2260', 'NEQ'],
@@ -150,6 +152,7 @@ export const blocks = createBlockDefinitionsFromJsonArray([
       {
         'type': 'field_dropdown',
         'name': 'OP',
+        'ariaName': 'operator',
         'options': [
           ['%{BKY_LOGIC_OPERATION_AND}', 'AND'],
           ['%{BKY_LOGIC_OPERATION_OR}', 'OR'],
@@ -175,6 +178,7 @@ export const blocks = createBlockDefinitionsFromJsonArray([
       {
         'type': 'input_value',
         'name': 'BOOL',
+        'ariaName': 'boolean',
         'check': 'Boolean',
       },
     ],

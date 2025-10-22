@@ -38,6 +38,7 @@ export const blocks = createBlockDefinitionsFromJsonArray([
       {
         'type': 'field_input',
         'name': 'TEXT',
+        'ariaName': 'text',
         'text': '',
       },
     ],
@@ -93,6 +94,7 @@ export const blocks = createBlockDefinitionsFromJsonArray([
       {
         'type': 'input_value',
         'name': 'TEXT',
+        'ariaName': 'text',
       },
     ],
     'previousStatement': null,
@@ -385,6 +387,7 @@ blocks['text_print'] = {
         {
           'type': 'input_value',
           'name': 'TEXT',
+          'ariaName': 'text',
         },
       ],
       'previousStatement': null,
@@ -532,6 +535,7 @@ blocks['text_count'] = {
         {
           'type': 'input_value',
           'name': 'TEXT',
+          'ariaName': 'text',
           'check': 'String',
         },
       ],
@@ -565,6 +569,7 @@ blocks['text_replace'] = {
         {
           'type': 'input_value',
           'name': 'TEXT',
+          'ariaName': 'text',
           'check': 'String',
         },
       ],
@@ -588,6 +593,7 @@ blocks['text_reverse'] = {
         {
           'type': 'input_value',
           'name': 'TEXT',
+          'ariaName': 'text',
           'check': 'String',
         },
       ],
