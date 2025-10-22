@@ -232,12 +232,16 @@ export class BlockSvg
    * @internal
    */
   recomputeAriaLabel() {
-    if (this.isSimpleReporter()) {
+    if (this.isSimpleReporter() && this.getParent()?.type !== 'controls_if') {
       const field = Array.from(this.getFields())[0];
       if (field.isFullBlockField() && field.isCurrentlyEditable()) return;
     }
 
-    if (this.isSimpleReporterShadowBlockWithFullBlockField()) return;
+    if (
+      this.isSimpleReporterShadowBlockWithFullBlockField() &&
+      this.getParent()?.type !== 'controls_if'
+    )
+      return;
 
     aria.setState(
       this.getFocusableElement(),
@@ -259,7 +263,17 @@ export class BlockSvg
   }
 
   private computeAriaLabel(): string {
-    const {blockSummary, inputCount} = buildBlockSummary(this);
+    let {blockSummary, inputCount} = buildBlockSummary(this);
+    // Hack for if blocks using shadow boolean inputs.
+    // We need to announce the preceding label, the logic value as well as
+    // its aria (dropdown) and the fact that it is replaceable.
+    if (this.isSimpleReporter()) {
+      const field = Array.from(this.getFields())[0];
+      if (field.isFullBlockField() && field.isCurrentlyEditable()) {
+        blockSummary = field.getAriaLabel();
+        inputCount = 0;
+      }
+    }
     const inputSummary = inputCount
       ? ` ${inputCount} ${inputCount > 1 ? 'inputs' : 'input'}`
       : '';

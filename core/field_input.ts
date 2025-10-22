@@ -183,6 +183,12 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
     this.recomputeAriaLabel();
   }
 
+  override getAriaLabel() {
+    return [this.getValue(), this.getAriaName()]
+      .filter((item) => item !== undefined && item !== null)
+      .join(', ');
+  }
+
   /**
    * Updates the ARIA label for this field.
    */
@@ -190,11 +196,8 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
     if (!this.fieldGroup_) return;
 
     const element = this.getFocusableElement();
-    const label = [this.getValue(), this.getAriaName()]
-      .filter((item) => item !== undefined && item !== null)
-      .join(', ');
 
-    aria.setState(element, aria.State.LABEL, label);
+    aria.setState(element, aria.State.LABEL, this.getAriaLabel());
   }
 
   override isFullBlockField(): boolean {

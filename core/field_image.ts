@@ -132,6 +132,12 @@ export class FieldImage extends Field<string> {
     }
   }
 
+  override getAriaLabel() {
+    return [this.altText, this.getAriaName()]
+      .filter((item) => !!item)
+      .join(', ');
+  }
+
   /**
    * Create the block UI for this image.
    */
@@ -163,10 +169,7 @@ export class FieldImage extends Field<string> {
       aria.setRole(element, aria.Role.IMAGE);
     }
 
-    const label = [this.altText, this.getAriaName()]
-      .filter((item) => !!item)
-      .join(', ');
-    aria.setState(element, aria.State.LABEL, label);
+    aria.setState(element, aria.State.LABEL, this.getAriaLabel());
   }
 
   override updateSize_() {}

@@ -275,6 +275,10 @@ export abstract class Field<T = any>
     }
   }
 
+  getAriaLabel(): string {
+    return '';
+  }
+
   getAriaName(): string | null {
     return (
       this.ariaName ??
