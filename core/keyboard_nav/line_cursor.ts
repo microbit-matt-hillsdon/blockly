@@ -359,6 +359,12 @@ export class LineCursor extends Marker {
                   (i) => i.connection?.targetBlock() === candidate,
                 );
               }
+              if (
+                candidate.outputConnection?.targetBlock()?.type !==
+                'controls_if'
+              ) {
+                return false;
+              }
             }
 
             const candidateParents = this.getParents(candidate);
@@ -382,13 +388,10 @@ export class LineCursor extends Marker {
               sharedParents.values().some((block) => {
                 // This is a hack to allow visiting input connections in if statements
                 // in MakeCode where the inputs are inline (mutators).
-                if (
-                  block.type === 'controls_if' &&
-                  block.inputList.some(
+                if (block.type === 'controls_if') {
+                  return block.inputList.some(
                     (i) => i.connection?.targetBlock() === candidate,
-                  )
-                ) {
-                  return true;
+                  );
                 }
                 return !block.getInputsInline();
               });
