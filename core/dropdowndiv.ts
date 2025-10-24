@@ -48,6 +48,9 @@ export const PADDING_Y = 16;
 /** Length of animations in seconds. */
 export const ANIMATION_TIME = 0.25;
 
+/** A class name representing the current owner's workspace container. */
+export const containerClassName = 'blocklyDropDownDiv';
+
 /**
  * Timer for animation out, to be cleared if we need to immediately hide
  * without disrupting new shows.
@@ -121,11 +124,12 @@ export interface PositionMetrics {
  * @internal
  */
 export function createDom() {
-  if (document.querySelector('.blocklyDropDownDiv')) {
+  if (document.querySelector('div.' + containerClassName)) {
     return; // Already created.
   }
   div = document.createElement('div');
-  div.className = 'blocklyDropDownDiv';
+  div.id = containerClassName;
+  div.className = containerClassName;
   div.tabIndex = -1;
   const parentDiv = common.getParentContainer() || document.body;
   parentDiv.appendChild(div);
