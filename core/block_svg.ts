@@ -33,6 +33,7 @@ import {BlockDragStrategy} from './dragging/block_drag_strategy.js';
 import type {BlockMove} from './events/events_block_move.js';
 import {EventType} from './events/type.js';
 import * as eventUtils from './events/utils.js';
+import {FieldImage} from './field_image.js';
 import {FieldLabel} from './field_label.js';
 import {getFocusManager} from './focus_manager.js';
 import {IconType} from './icons/icon_types.js';
@@ -2099,6 +2100,8 @@ function buildBlockSummary(block: BlockSvg): BlockSummary {
       .flatMap((input) => {
         const fields = input.fieldRow.map((field) => {
           if (!field.isVisible()) return [];
+          // Introduced to avoid reading out mutator buttons in MakeCode.
+          if (field instanceof FieldImage) return [];
           // If the block is a full block field, we only want to know if it's an
           // editable field if we're not directly on it.
           if (field.EDITABLE && !field.isFullBlockField() && !isNestedInput) {
