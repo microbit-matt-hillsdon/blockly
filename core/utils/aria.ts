@@ -201,6 +201,8 @@ export function getState(element: Element, stateName: State): string | null {
   return element.getAttribute(attrStateName);
 }
 
+let previousText = '';
+
 /**
  * Softly requests that the specified text be read to the user if a screen
  * reader is currently active.
@@ -216,11 +218,27 @@ export function getState(element: Element, stateName: State): string | null {
  * representations or indications).
  *
  * @param text The text to politely read to the user.
+ * @param assertiveness The assertiveness level the ARIA live region should have.
+ * @param role The role the ARIA live region should have.
  */
-export function announceDynamicAriaState(text: string) {
+export function announceDynamicAriaState(
+  text: string,
+  assertiveness?: string,
+  role?: string,
+) {
   const ariaAnnouncementSpan = document.getElementById('blocklyAriaAnnounce');
   if (!ariaAnnouncementSpan) {
     throw new Error('Expected element with id blocklyAriaAnnounce to exist.');
   }
-  ariaAnnouncementSpan.innerHTML = text;
+  ariaAnnouncementSpan.textContent = '';
+  ariaAnnouncementSpan.ariaLive = assertiveness ?? 'polite';
+  ariaAnnouncementSpan.role = role ?? null;
+  const message =
+    previousText === text
+      ? text.endsWith('.')
+        ? text.substring(0, text.length - 1)
+        : `${text}.`
+      : text;
+  ariaAnnouncementSpan.textContent = message;
+  previousText = message;
 }
