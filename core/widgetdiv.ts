@@ -25,7 +25,7 @@ let ownerWorkspace: WorkspaceSvg | null = null;
 let dispose: (() => void) | null = null;
 
 /** A class name representing the current owner's workspace container. */
-const containerClassName = 'blocklyWidgetDiv';
+export const containerClassName = 'blocklyWidgetDiv';
 
 /** A class name representing the current owner's workspace renderer. */
 let rendererClassName = '';
@@ -72,6 +72,7 @@ export function createDom() {
     containerDiv = existingContainer as HTMLDivElement;
   } else {
     containerDiv = document.createElement('div');
+    containerDiv.id = containerClassName;
     containerDiv.className = containerClassName;
     containerDiv.tabIndex = -1;
   }

@@ -771,6 +771,13 @@ export class WorkspaceSvg
     }
     aria.setRole(this.svgGroup_, aria.Role.REGION);
     aria.setState(this.svgGroup_, aria.State.LABEL, ariaLabel);
+    if (!this.isFlyout && !this.isMutator) {
+      aria.setState(
+        this.svgGroup_,
+        aria.State.OWNS,
+        `${WidgetDiv.containerClassName} ${dropDownDiv.containerClassName}`,
+      );
+    }
 
     // Note that a <g> alone does not receive mouse events--it must have a
     // valid target inside it.  If no background class is specified, as in the
