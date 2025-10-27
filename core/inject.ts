@@ -89,6 +89,13 @@ export function inject(
   aria.setState(ariaAnnouncementSpan, aria.State.LIVE, 'polite');
   subContainer.appendChild(ariaAnnouncementSpan);
 
+  // See: https://stackoverflow.com/a/48590836 for a reference.
+  const toastAnnouncementSpan = document.createElement('span');
+  toastAnnouncementSpan.id = 'blocklyToastAnnounce';
+  dom.addClass(toastAnnouncementSpan, 'hiddenForAria');
+  aria.setState(toastAnnouncementSpan, aria.State.LIVE, 'polite');
+  subContainer.appendChild(toastAnnouncementSpan);
+
   return workspace;
 }
 

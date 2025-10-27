@@ -225,10 +225,13 @@ export function announceDynamicAriaState(
   text: string,
   assertiveness?: string,
   role?: string,
+  type?: 'general' | 'toast',
 ) {
-  const ariaAnnouncementSpan = document.getElementById('blocklyAriaAnnounce');
+  const elementId =
+    type === 'toast' ? 'blocklyToastAnnounce' : 'blocklyAriaAnnounce';
+  const ariaAnnouncementSpan = document.getElementById(elementId);
   if (!ariaAnnouncementSpan) {
-    throw new Error('Expected element with id blocklyAriaAnnounce to exist.');
+    throw new Error(`Expected element with id ${elementId} to exist.`);
   }
   ariaAnnouncementSpan.textContent = '';
   ariaAnnouncementSpan.ariaLive = assertiveness ?? 'polite';

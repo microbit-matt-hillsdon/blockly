@@ -100,7 +100,12 @@ export class Toast {
     const messageElement = toast.appendChild(document.createElement('div'));
     messageElement.className = MESSAGE_CLASS_NAME;
     messageElement.innerText = message;
-    aria.announceDynamicAriaState(message, assertiveness, aria.Role.STATUS);
+    aria.announceDynamicAriaState(
+      message,
+      assertiveness,
+      aria.Role.STATUS,
+      'toast',
+    );
     const closeButton = toast.appendChild(document.createElement('button'));
     closeButton.className = CLOSE_BUTTON_CLASS_NAME;
     aria.setState(closeButton, aria.State.LABEL, Msg['CLOSE']);
