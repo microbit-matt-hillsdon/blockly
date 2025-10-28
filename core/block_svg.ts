@@ -325,7 +325,7 @@ export class BlockSvg
     if (inputSummary && !this.statementInputCount) {
       additionalInfo = `${additionalInfo}${inputSummary}`;
     } else if (this.statementInputCount) {
-      const childBlockSummary = `${nestedStatementBlockCount} children`;
+      const childBlockSummary = `${nestedStatementBlockCount} ${nestedStatementBlockCount === 1 ? 'child' : 'children'}`;
       if (inputSummary) {
         additionalInfo = `${additionalInfo}${inputSummary} and ${childBlockSummary}`;
       } else {
