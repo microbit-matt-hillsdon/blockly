@@ -333,7 +333,9 @@ export class BlockSvg
       }
     }
 
-    return prefix + blockSummary + ', ' + additionalInfo;
+    return (
+      prefix + blockSummary + (additionalInfo ? `, ${additionalInfo}` : '')
+    );
   }
 
   private computeAriaRole() {
