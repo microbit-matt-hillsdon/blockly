@@ -382,16 +382,17 @@ export class LineCursor extends Marker {
             if (candidate.outputConnection?.targetBlock()?.getInputsInline()) {
               // This is a hack to allow visiting input connections in if statements
               // in MakeCode where the inputs are inline (mutators).
-              if (current.type === 'controls_if') {
+              if (currentBlock.type === 'controls_if') {
                 if (direction === NavigationDirection.NEXT) {
                   // Don't go to the first input on the if row when moving down.
                   // See https://github.com/google/blockly-keyboard-experimentation/issues/762
-                  const target = current.inputList[0].connection?.targetBlock();
+                  const target =
+                    currentBlock.inputList[0].connection?.targetBlock();
                   if (candidate === target) {
                     return false;
                   }
                 }
-                return current.inputList.some(
+                return currentBlock.inputList.some(
                   (i) => i.connection?.targetBlock() === candidate,
                 );
               }
