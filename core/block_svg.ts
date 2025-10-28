@@ -295,15 +295,7 @@ export class BlockSvg
       }
     }
 
-    let blockTypeText = 'block';
-    if (this.isShadow()) {
-      blockTypeText = 'replaceable block';
-    } else if (this.outputConnection) {
-      blockTypeText = 'input block';
-    } else if (this.statementInputCount) {
-      blockTypeText = 'C-shaped block';
-    }
-
+    let blockModifiersText = '';
     const modifiers = [];
     if (!this.isEnabled()) {
       modifiers.push('disabled');
@@ -312,7 +304,7 @@ export class BlockSvg
       modifiers.push('collapsed');
     }
     if (modifiers.length) {
-      blockTypeText = `${modifiers.join(' ')} ${blockTypeText}`;
+      blockModifiersText = modifiers.join(' ');
     }
 
     let prefix = '';
@@ -329,15 +321,15 @@ export class BlockSvg
       prefix = `${parentInput.getFieldRowLabel()} `;
     }
 
-    let additionalInfo = blockTypeText;
-    if (inputSummary && !nestedStatementBlockCount) {
-      additionalInfo = `${additionalInfo} with ${inputSummary}`;
-    } else if (nestedStatementBlockCount) {
-      const childBlockSummary = `${nestedStatementBlockCount} child ${nestedStatementBlockCount > 1 ? 'blocks' : 'block'}`;
+    let additionalInfo = blockModifiersText ? `${blockModifiersText}, ` : '';
+    if (inputSummary && !this.statementInputCount) {
+      additionalInfo = `${additionalInfo}${inputSummary}`;
+    } else if (this.statementInputCount) {
+      const childBlockSummary = `${nestedStatementBlockCount} children`;
       if (inputSummary) {
-        additionalInfo = `${additionalInfo} with ${inputSummary} and ${childBlockSummary}`;
+        additionalInfo = `${additionalInfo}${inputSummary} and ${childBlockSummary}`;
       } else {
-        additionalInfo = `${additionalInfo} with ${childBlockSummary}`;
+        additionalInfo = `${additionalInfo}${childBlockSummary}`;
       }
     }
 
