@@ -185,7 +185,7 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
 
   override getAriaLabel() {
     return [this.getValue(), this.getAriaName()]
-      .filter((item) => item !== undefined && item !== null)
+      .filter((item) => item !== null)
       .join(', ');
   }
 
