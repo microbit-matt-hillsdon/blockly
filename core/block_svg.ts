@@ -2078,7 +2078,11 @@ export class BlockSvg
         );
         announcementContext.push(...announcementParts);
       } else {
-        if (surroundParent?.statementInputCount) {
+        if (
+          surroundParent?.statementInputCount &&
+          this.currentConnectionCandidate.sourceBlock_.nextConnection !==
+            this.currentConnectionCandidate
+        ) {
           announcementContext.push('inside');
         } else {
           if (
