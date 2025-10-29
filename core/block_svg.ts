@@ -263,7 +263,13 @@ export class BlockSvg
     return false;
   }
 
-  private computeAriaLabel(): string {
+  private computeAriaLabel(options?: {
+    // Options used for move mode readout.
+    includePrefix?: boolean;
+    minimalOutput?: boolean;
+  }): string {
+    const includePrefix = options?.includePrefix ?? true;
+    const minimal = options?.minimalOutput ?? false;
     let {blockSummary, inputCount} = buildBlockSummary(this);
     // Hack for if blocks using shadow boolean inputs.
     // We need to announce the preceding label, the logic value as well as
@@ -332,9 +338,13 @@ export class BlockSvg
         additionalInfo = `${additionalInfo}${childBlockSummary}`;
       }
     }
-
+    if (minimal) {
+      return blockSummary;
+    }
     return (
-      prefix + blockSummary + (additionalInfo ? `, ${additionalInfo}` : '')
+      (includePrefix ? prefix : '') +
+      blockSummary +
+      (additionalInfo ? `, ${additionalInfo}` : '')
     );
   }
 
@@ -2064,11 +2074,34 @@ export class BlockSvg
       // NB: Old code here doesn't seem to handle parents correctly.
       if (this.currentConnectionCandidate.type === ConnectionType.INPUT_VALUE) {
         announcementContext.push('to', 'input');
+        // If the block only has one input, we might not need this.
+        const inputLabel = this.currentConnectionCandidate
+          .targetBlock()
+          ?.computeAriaLabel({minimalOutput: true}); // minimalOutput is just the block summary (no input or status information).
+        if (inputLabel) {
+          // Provide additional context to which input is being targeted.
+          announcementContext.push(inputLabel);
+        }
+        announcementContext.push('in');
       } else {
-        announcementContext.push('to', 'child');
+        if (surroundParent?.statementInputCount) {
+          announcementContext.push('inside');
+        } else {
+          if (
+            this.currentConnectionCandidate.type ===
+            ConnectionType.PREVIOUS_STATEMENT
+          ) {
+            announcementContext.push('before');
+          } else {
+            announcementContext.push('after');
+          }
+        }
       }
       if (surroundParent) {
-        announcementContext.push('of', surroundParent.computeAriaLabel());
+        announcementContext.push(
+          // includePrefix to remove the "Being ...," readout for this block.
+          surroundParent.computeAriaLabel({includePrefix: false}),
+        );
       }
 
       // If the block is currently being moved, announce the new block label so that the user understands where it is now.
