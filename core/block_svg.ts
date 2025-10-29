@@ -224,7 +224,7 @@ export class BlockSvg
     this.currentConnectionCandidate = null;
 
     this.doInit_();
-    this.computeAriaRole();
+    this.recomputeAriaRole();
   }
 
   /**
@@ -276,7 +276,7 @@ export class BlockSvg
       }
     }
     const inputSummary = inputCount
-      ? ` ${inputCount} ${inputCount > 1 ? 'inputs' : 'input'}`
+      ? `${inputCount} ${inputCount > 1 ? 'inputs' : 'input'}`
       : '';
 
     let currentBlock: BlockSvg | null = null;
@@ -338,15 +338,17 @@ export class BlockSvg
     );
   }
 
-  private computeAriaRole() {
+  private recomputeAriaRole() {
     if (this.workspace.isFlyout) {
       aria.setRole(this.pathObject.svgPath, aria.Role.TREEITEM);
     } else {
-      aria.setState(
-        this.pathObject.svgPath,
-        aria.State.ROLEDESCRIPTION,
-        'block',
-      );
+      let value = 'block';
+      if (this.isShadow()) {
+        value = 'replaceable block';
+      } else if (this.outputConnection) {
+        value = 'input block';
+      }
+      aria.setState(this.pathObject.svgPath, aria.State.ROLEDESCRIPTION, value);
       aria.setRole(this.pathObject.svgPath, aria.Role.FIGURE);
     }
   }
@@ -962,6 +964,8 @@ export class BlockSvg
   override setShadow(shadow: boolean) {
     super.setShadow(shadow);
     this.applyColour();
+    // Need to know when the shadow state changes.
+    this.recomputeAriaRole();
   }
 
   /**
@@ -2125,6 +2129,7 @@ function buildBlockSummary(block: BlockSvg): BlockSummary {
         }
         return fields;
       })
+      .filter(Boolean)
       .join(' ');
   }
 
