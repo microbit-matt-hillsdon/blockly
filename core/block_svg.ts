@@ -20,7 +20,7 @@ import * as browserEvents from './browser_events.js';
 import {BlockCopyData, BlockPaster} from './clipboard/block_paster.js';
 import * as common from './common.js';
 import {config} from './config.js';
-import type {Connection} from './connection.js';
+import {Connection} from './connection.js';
 import {ConnectionType} from './connection_type.js';
 import * as constants from './constants.js';
 import * as ContextMenu from './contextmenu.js';
@@ -263,13 +263,9 @@ export class BlockSvg
     return false;
   }
 
-  private computeAriaLabel(options?: {
-    // Options used for move mode readout.
-    includePrefix?: boolean;
-    minimalOutput?: boolean;
-  }): string {
-    const includePrefix = options?.includePrefix ?? true;
-    const minimal = options?.minimalOutput ?? false;
+  private computeAriaLabel(
+    outputOption: 'full' | 'minimal' | 'minimalWithInputs' = 'full',
+  ): string {
     let {blockSummary, inputCount} = buildBlockSummary(this);
     // Hack for if blocks using shadow boolean inputs.
     // We need to announce the preceding label, the logic value as well as
@@ -338,13 +334,14 @@ export class BlockSvg
         additionalInfo = `${additionalInfo}${childBlockSummary}`;
       }
     }
-    if (minimal) {
+    if (outputOption === 'minimal') {
       return blockSummary;
     }
+    if (outputOption === 'minimalWithInputs' && inputSummary) {
+      return `${blockSummary}, ${inputSummary}`;
+    }
     return (
-      (includePrefix ? prefix : '') +
-      blockSummary +
-      (additionalInfo ? `, ${additionalInfo}` : '')
+      prefix + blockSummary + (additionalInfo ? `, ${additionalInfo}` : '')
     );
   }
 
@@ -2073,16 +2070,13 @@ export class BlockSvg
       announcementContext.push('Moving'); // TODO: Specialize for inserting?
       // NB: Old code here doesn't seem to handle parents correctly.
       if (this.currentConnectionCandidate.type === ConnectionType.INPUT_VALUE) {
-        announcementContext.push('to', 'input');
-        // If the block only has one input, we might not need this.
-        const inputLabel = this.currentConnectionCandidate
-          .targetBlock()
-          ?.computeAriaLabel({minimalOutput: true}); // minimalOutput is just the block summary (no input or status information).
-        if (inputLabel) {
-          // Provide additional context to which input is being targeted.
-          announcementContext.push(inputLabel);
-        }
-        announcementContext.push('in');
+        const inputName =
+          this.currentConnectionCandidate.getParentInput()?.label ??
+          this.currentConnectionCandidate.getParentInput()?.name?.toLowerCase();
+        const announcementParts = ['to', inputName, 'input', 'in'].filter(
+          Boolean,
+        );
+        announcementContext.push(...announcementParts);
       } else {
         if (surroundParent?.statementInputCount) {
           announcementContext.push('inside');
@@ -2099,8 +2093,13 @@ export class BlockSvg
       }
       if (surroundParent) {
         announcementContext.push(
-          // includePrefix to remove the "Being ...," readout for this block.
-          surroundParent.computeAriaLabel({includePrefix: false}),
+          // minimal to exclude block status, prefix, num inputs and children.
+          // minimalWithInputs is as above, but includes number of inputs (useful when moving to inputs).
+          surroundParent.computeAriaLabel(
+            this.currentConnectionCandidate.type === ConnectionType.INPUT_VALUE
+              ? 'minimalWithInputs'
+              : 'minimal',
+          ),
         );
       }
 
@@ -2130,9 +2129,9 @@ function buildBlockSummary(block: BlockSvg): BlockSummary {
     return block.inputList
       .flatMap((input) => {
         const fields = input.fieldRow.map((field) => {
-          if (!field.isVisible()) return [];
+          if (!field.isVisible()) return;
           // Introduced to avoid reading out mutator buttons in MakeCode.
-          if (field instanceof FieldImage) return [];
+          if (field instanceof FieldImage) return;
           // If the block is a full block field, we only want to know if it's an
           // editable field if we're not directly on it.
           if (field.EDITABLE && !field.isFullBlockField() && !isNestedInput) {
