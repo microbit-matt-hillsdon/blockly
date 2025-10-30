@@ -201,7 +201,12 @@ export function getState(element: Element, stateName: State): string | null {
   return element.getAttribute(attrStateName);
 }
 
-let previousText = '';
+type MessageType = 'general' | 'toast';
+
+const previousMessages: Record<MessageType, string> = {
+  'general': '',
+  'toast': '',
+};
 
 /**
  * Softly requests that the specified text be read to the user if a screen
@@ -225,7 +230,7 @@ export function announceDynamicAriaState(
   text: string,
   assertiveness?: string,
   role?: string,
-  type?: 'general' | 'toast',
+  type: MessageType = 'general',
 ) {
   const elementId =
     type === 'toast' ? 'blocklyToastAnnounce' : 'blocklyAriaAnnounce';
@@ -237,11 +242,11 @@ export function announceDynamicAriaState(
   ariaAnnouncementSpan.ariaLive = assertiveness ?? 'polite';
   ariaAnnouncementSpan.role = role ?? null;
   const message =
-    previousText === text
+    previousMessages[type] === text
       ? text.endsWith('.')
         ? text.substring(0, text.length - 1)
         : `${text}.`
       : text;
   ariaAnnouncementSpan.textContent = message;
-  previousText = message;
+  previousMessages[type] = message;
 }

@@ -2115,6 +2115,11 @@ export class BlockSvg
       aria.announceDynamicAriaState(
         `Moving unconstrained to coordinate x ${Math.round(newLoc.x)} and y ${Math.round(newLoc.y)}.`,
       );
+    } else {
+      // The block has been put in move mode or inserted from the flyout on to the workspace,
+      // but has no newLoc or currentConnectionCandidate. We want a simple announcement to let
+      // the user know the block is now in move mode.
+      aria.announceDynamicAriaState('Moving to workspace.');
     }
   }
 }
