@@ -70,12 +70,7 @@ export class Toast {
     // Clear any existing toasts.
     this.hide(workspace);
 
-    const toast = this.createDom(workspace, options);
-
-    // Animate the toast into view.
-    requestAnimationFrame(() => {
-      toast.style.bottom = '2rem';
-    });
+    this.createDom(workspace, options);
   }
 
   /**
@@ -96,12 +91,17 @@ export class Toast {
     workspace.getInjectionDiv().appendChild(toast);
     toast.dataset.toastId = options.id;
     toast.className = CLASS_NAME;
-    aria.setRole(toast, aria.Role.STATUS);
-    aria.setState(toast, aria.State.LIVE, assertiveness);
-
     const messageElement = toast.appendChild(document.createElement('div'));
-    messageElement.className = MESSAGE_CLASS_NAME;
-    messageElement.innerText = message;
+    aria.setState(messageElement, aria.State.LIVE, assertiveness);
+    setTimeout(() => {
+      aria.setRole(messageElement, aria.Role.STATUS);
+      messageElement.className = MESSAGE_CLASS_NAME;
+      messageElement.innerText = message;
+      // Animate the toast into view.
+      requestAnimationFrame(() => {
+        toast.style.bottom = '2rem';
+      });
+    }, 10);
     const closeButton = toast.appendChild(document.createElement('button'));
     closeButton.className = CLOSE_BUTTON_CLASS_NAME;
     aria.setState(closeButton, aria.State.LABEL, Msg['CLOSE']);

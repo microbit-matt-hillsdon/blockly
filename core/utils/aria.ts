@@ -218,9 +218,18 @@ export function getState(element: Element, stateName: State): string | null {
  * @param text The text to politely read to the user.
  */
 export function announceDynamicAriaState(text: string) {
-  const ariaAnnouncementSpan = document.getElementById('blocklyAriaAnnounce');
-  if (!ariaAnnouncementSpan) {
+  const ariaAnnouncementContainer = document.getElementById(
+    'blocklyAriaAnnounce',
+  );
+  if (!ariaAnnouncementContainer) {
     throw new Error('Expected element with id blocklyAriaAnnounce to exist.');
   }
-  ariaAnnouncementSpan.innerHTML = text;
+  ariaAnnouncementContainer.innerHTML = '';
+  const messageElement = ariaAnnouncementContainer.appendChild(
+    document.createElement('span'),
+  );
+  setState(messageElement, State.LIVE, 'polite');
+  setTimeout(() => {
+    messageElement.innerText = text;
+  }, 10);
 }
