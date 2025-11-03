@@ -324,9 +324,17 @@ export class Input {
     if (!fieldRowLabel) {
       const inputs = this.getSourceBlock().inputList;
       const index = inputs.indexOf(this);
-      if (index > 0) {
-        return inputs[index - 1].getFieldRowLabel();
-      }
+      const precedingInputs = inputs.slice(0, index);
+      return precedingInputs
+        .flatMap((input) => {
+          const fields = input.fieldRow.map((field) => {
+            if (!field.isVisible()) return undefined;
+            return [field.getText() ?? field.getValue()];
+          });
+          return fields;
+        })
+        .filter(Boolean)
+        .join(' ');
     }
     return fieldRowLabel;
   }
