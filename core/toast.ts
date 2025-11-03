@@ -96,9 +96,6 @@ export class Toast {
     workspace.getInjectionDiv().appendChild(toast);
     toast.dataset.toastId = options.id;
     toast.className = CLASS_NAME;
-    aria.setRole(toast, aria.Role.STATUS);
-    aria.setState(toast, aria.State.LIVE, assertiveness);
-
     const messageElement = toast.appendChild(document.createElement('div'));
     messageElement.className = MESSAGE_CLASS_NAME;
     messageElement.innerText = message;
@@ -156,6 +153,11 @@ export class Toast {
     toast.addEventListener('mousemove', clearToastTimeout);
     toast.addEventListener('mouseleave', setToastTimeout);
     setToastTimeout();
+
+    aria.announceDynamicAriaState(message, {
+      assertiveness,
+      role: aria.Role.STATUS,
+    });
 
     return toast;
   }

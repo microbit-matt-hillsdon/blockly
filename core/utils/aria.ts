@@ -201,6 +201,10 @@ export function getState(element: Element, stateName: State): string | null {
   return element.getAttribute(attrStateName);
 }
 
+let ariaAnnounceTimeout: ReturnType<typeof setTimeout>;
+let ariaAnnounceHtml = '';
+let addBreakingSpace = false;
+
 /**
  * Assertively requests that the specified text be read to the user if a screen
  * reader is currently active.
@@ -217,10 +221,31 @@ export function getState(element: Element, stateName: State): string | null {
  *
  * @param text The text to read to the user.
  */
-export function announceDynamicAriaState(text: string) {
-  const ariaAnnouncementSpan = document.getElementById('blocklyAriaAnnounce');
-  if (!ariaAnnouncementSpan) {
+export function announceDynamicAriaState(
+  text: string,
+  options: {
+    assertiveness: string;
+    role: Role | null;
+  } = {
+    assertiveness: 'polite',
+    role: null,
+  },
+) {
+  const ariaAnnouncementContainer = document.getElementById(
+    'blocklyAriaAnnounce',
+  );
+  if (!ariaAnnouncementContainer) {
     throw new Error('Expected element with id blocklyAriaAnnounce to exist.');
   }
-  ariaAnnouncementSpan.innerHTML = text;
+  const {assertiveness, role} = options;
+  ariaAnnouncementContainer.innerHTML = '';
+  setState(ariaAnnouncementContainer, State.LIVE, assertiveness);
+  ariaAnnounceHtml += `<p>${text}${addBreakingSpace ? '&nbsp;' : ''}</p>`;
+  addBreakingSpace = !addBreakingSpace;
+  clearTimeout(ariaAnnounceTimeout);
+  ariaAnnounceTimeout = setTimeout(() => {
+    setRole(ariaAnnouncementContainer, role);
+    ariaAnnouncementContainer.innerHTML = ariaAnnounceHtml;
+    ariaAnnounceHtml = '';
+  }, 10);
 }

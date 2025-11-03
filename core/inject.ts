@@ -83,10 +83,10 @@ export function inject(
   );
 
   // See: https://stackoverflow.com/a/48590836 for a reference.
-  const ariaAnnouncementSpan = document.createElement('span');
+  const ariaAnnouncementSpan = document.createElement('div');
   ariaAnnouncementSpan.id = 'blocklyAriaAnnounce';
   dom.addClass(ariaAnnouncementSpan, 'hiddenForAria');
-  aria.setState(ariaAnnouncementSpan, aria.State.LIVE, 'assertive');
+  aria.setState(ariaAnnouncementSpan, aria.State.LIVE, 'polite');
   subContainer.appendChild(ariaAnnouncementSpan);
 
   return workspace;
