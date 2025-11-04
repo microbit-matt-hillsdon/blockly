@@ -86,6 +86,8 @@ export function inject(
   const ariaAnnouncementContainer = document.createElement('div');
   ariaAnnouncementContainer.id = 'blocklyAriaAnnounce';
   dom.addClass(ariaAnnouncementContainer, 'hiddenForAria');
+  aria.setState(ariaAnnouncementContainer, aria.State.LIVE, 'polite');
+  // ariaAnnouncementContainer.ariaAtomic = 'false';
   subContainer.appendChild(ariaAnnouncementContainer);
 
   return workspace;

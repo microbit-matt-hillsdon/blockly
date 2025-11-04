@@ -40,12 +40,6 @@ export interface ToastOptions {
    * Duration in seconds before the toast is removed. Defaults to 5.
    */
   duration?: number;
-
-  /**
-   * How prominently/interrupting the readout of the toast should be for
-   * screenreaders. Corresponds to aria-live and defaults to polite.
-   */
-  assertiveness?: Toast.Assertiveness;
 }
 
 /**
@@ -70,7 +64,12 @@ export class Toast {
     // Clear any existing toasts.
     this.hide(workspace);
 
-    this.createDom(workspace, options);
+    const toast = this.createDom(workspace, options);
+
+    // Animate the toast into view.
+    requestAnimationFrame(() => {
+      toast.style.bottom = '2rem';
+    });
   }
 
   /**
@@ -81,27 +80,15 @@ export class Toast {
    * @returns The root DOM element of the toast.
    */
   protected static createDom(workspace: WorkspaceSvg, options: ToastOptions) {
-    const {
-      message,
-      duration = 5,
-      assertiveness = Toast.Assertiveness.POLITE,
-    } = options;
+    const {message, duration = 5} = options;
 
     const toast = document.createElement('div');
     workspace.getInjectionDiv().appendChild(toast);
     toast.dataset.toastId = options.id;
     toast.className = CLASS_NAME;
     const messageElement = toast.appendChild(document.createElement('div'));
-    aria.setState(messageElement, aria.State.LIVE, assertiveness);
-    setTimeout(() => {
-      aria.setRole(messageElement, aria.Role.STATUS);
-      messageElement.className = MESSAGE_CLASS_NAME;
-      messageElement.innerText = message;
-      // Animate the toast into view.
-      requestAnimationFrame(() => {
-        toast.style.bottom = '2rem';
-      });
-    }, 10);
+    messageElement.className = MESSAGE_CLASS_NAME;
+    messageElement.innerText = message;
     const closeButton = toast.appendChild(document.createElement('button'));
     closeButton.className = CLOSE_BUTTON_CLASS_NAME;
     aria.setState(closeButton, aria.State.LABEL, Msg['CLOSE']);
@@ -156,6 +143,8 @@ export class Toast {
     toast.addEventListener('mousemove', clearToastTimeout);
     toast.addEventListener('mouseleave', setToastTimeout);
     setToastTimeout();
+
+    aria.announceDynamicAriaState(message);
 
     return toast;
   }

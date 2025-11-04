@@ -224,12 +224,8 @@ export function announceDynamicAriaState(text: string) {
   if (!ariaAnnouncementContainer) {
     throw new Error('Expected element with id blocklyAriaAnnounce to exist.');
   }
-  ariaAnnouncementContainer.innerHTML = '';
   const messageElement = ariaAnnouncementContainer.appendChild(
     document.createElement('span'),
   );
-  setState(messageElement, State.LIVE, 'polite');
-  setTimeout(() => {
-    messageElement.innerText = text;
-  }, 10);
+  messageElement.innerText = text;
 }
