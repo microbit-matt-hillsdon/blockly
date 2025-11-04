@@ -201,6 +201,9 @@ export function getState(element: Element, stateName: State): string | null {
   return element.getAttribute(attrStateName);
 }
 
+let ariaAnnounceTimeout: ReturnType<typeof setTimeout>;
+let ariaAnnounceHtml: string = '';
+
 /**
  * Softly requests that the specified text be read to the user if a screen
  * reader is currently active.
@@ -217,15 +220,33 @@ export function getState(element: Element, stateName: State): string | null {
  *
  * @param text The text to politely read to the user.
  */
-export function announceDynamicAriaState(text: string) {
+export function announceDynamicAriaState(
+  text: string,
+  options: {
+    assertiveness: string;
+    role: Role | null;
+  } = {
+    assertiveness: 'polite',
+    role: null,
+  },
+) {
   const ariaAnnouncementContainer = document.getElementById(
     'blocklyAriaAnnounce',
   );
   if (!ariaAnnouncementContainer) {
     throw new Error('Expected element with id blocklyAriaAnnounce to exist.');
   }
+  const {assertiveness, role} = options;
+  ariaAnnouncementContainer.innerHTML = '';
   const messageElement = ariaAnnouncementContainer.appendChild(
     document.createElement('span'),
   );
-  messageElement.innerText = text;
+  setState(messageElement, State.LIVE, assertiveness);
+  ariaAnnounceHtml += `<p>${text}</p>`;
+  clearTimeout(ariaAnnounceTimeout);
+  ariaAnnounceTimeout = setTimeout(() => {
+    setRole(messageElement, role);
+    messageElement.innerHTML = ariaAnnounceHtml;
+    ariaAnnounceHtml = '';
+  }, 100);
 }

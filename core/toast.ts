@@ -40,6 +40,12 @@ export interface ToastOptions {
    * Duration in seconds before the toast is removed. Defaults to 5.
    */
   duration?: number;
+
+  /**
+   * How prominently/interrupting the readout of the toast should be for
+   * screenreaders. Corresponds to aria-live and defaults to polite.
+   */
+  assertiveness?: Toast.Assertiveness;
 }
 
 /**
@@ -80,7 +86,11 @@ export class Toast {
    * @returns The root DOM element of the toast.
    */
   protected static createDom(workspace: WorkspaceSvg, options: ToastOptions) {
-    const {message, duration = 5} = options;
+    const {
+      message,
+      duration = 5,
+      assertiveness = Toast.Assertiveness.POLITE,
+    } = options;
 
     const toast = document.createElement('div');
     workspace.getInjectionDiv().appendChild(toast);
@@ -144,7 +154,10 @@ export class Toast {
     toast.addEventListener('mouseleave', setToastTimeout);
     setToastTimeout();
 
-    aria.announceDynamicAriaState(message);
+    aria.announceDynamicAriaState(message, {
+      assertiveness,
+      role: aria.Role.STATUS,
+    });
 
     return toast;
   }
