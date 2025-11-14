@@ -244,8 +244,8 @@ export class BlockSvg
     );
   }
 
-  private computeAriaLabel(): string {
-    const {blockSummary, inputCount} = buildBlockSummary(this);
+  computeAriaLabel(verbose: boolean = false): string {
+    const {blockSummary, inputCount} = buildBlockSummary(this, verbose);
     const inputSummary = inputCount
       ? ` ${inputCount} ${inputCount > 1 ? 'inputs' : 'input'}`
       : '';
@@ -2051,7 +2051,7 @@ interface BlockSummary {
   inputCount: number;
 }
 
-function buildBlockSummary(block: BlockSvg): BlockSummary {
+function buildBlockSummary(block: BlockSvg, verbose: boolean): BlockSummary {
   let inputCount = 0;
   function recursiveInputSummary(
     block: BlockSvg,
@@ -2066,7 +2066,7 @@ function buildBlockSummary(block: BlockSvg): BlockSummary {
           if (field.EDITABLE && !field.isFullBlockField() && !isNestedInput) {
             inputCount++;
           }
-          return [field.getText() ?? field.getValue()];
+          return field.computeAriaLabel(verbose);
         });
         if (
           input.isVisible() &&

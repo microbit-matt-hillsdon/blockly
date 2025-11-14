@@ -183,18 +183,18 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
     this.recomputeAriaLabel();
   }
 
+  override getAriaValue(): string {
+    // TODO: Figure out if this is actually sufficiently correct for conversion + null cases (probably not).
+    return String(this.getValue());
+  }
+
   /**
    * Updates the ARIA label for this field.
    */
   protected recomputeAriaLabel() {
     if (!this.fieldGroup_) return;
-
     const element = this.getFocusableElement();
-    const label = [this.getValue(), this.getAriaName()]
-      .filter((item) => item !== null)
-      .join(', ');
-
-    aria.setState(element, aria.State.LABEL, label);
+    aria.setState(element, aria.State.LABEL, super.computeAriaLabel());
   }
 
   override isFullBlockField(): boolean {

@@ -16,6 +16,7 @@ import {isDeletable as isIDeletable} from './interfaces/i_deletable.js';
 import {isDraggable} from './interfaces/i_draggable.js';
 import {IFocusableNode} from './interfaces/i_focusable_node.js';
 import {KeyboardShortcut, ShortcutRegistry} from './shortcut_registry.js';
+import {aria} from './utils.js';
 import {Coordinate} from './utils/coordinate.js';
 import {KeyCodes} from './utils/keycodes.js';
 import {Rect} from './utils/rect.js';
@@ -33,6 +34,8 @@ export enum names {
   PASTE = 'paste',
   UNDO = 'undo',
   REDO = 'redo',
+  READ_FULL_BLOCK_SUMMARY = 'read_full_block_summary',
+  READ_BLOCK_PARENT_SUMMARY = 'read_block_parent_summary',
 }
 
 /**
@@ -386,6 +389,77 @@ export function registerRedo() {
   ShortcutRegistry.registry.register(redoShortcut);
 }
 
+// A version of solving the 'where am I?' problem. Read out a more detailed
+// summary of the current selected block.
+export function registerReadFullBlockSummary() {
+  const ctrlShiftI = ShortcutRegistry.registry.createSerializedKey(KeyCodes.I, [
+    KeyCodes.CTRL,
+    KeyCodes.SHIFT,
+  ]);
+  const metaShiftI = ShortcutRegistry.registry.createSerializedKey(KeyCodes.I, [
+    KeyCodes.META,
+    KeyCodes.SHIFT,
+  ]);
+  const readFullBlockSummaryShortcut: KeyboardShortcut = {
+    name: names.READ_FULL_BLOCK_SUMMARY,
+    preconditionFn(workspace) {
+      return (
+        !workspace.isDragging() &&
+        !getFocusManager().ephemeralFocusTaken() &&
+        !!getFocusManager().getFocusedNode() &&
+        getFocusManager().getFocusedNode() instanceof BlockSvg
+      );
+    },
+    callback(workspace, e) {
+      const selectedBlock = getFocusManager().getFocusedNode() as BlockSvg;
+      const blockSummary = selectedBlock.computeAriaLabel(true);
+      aria.announceDynamicAriaState(`Current block: ${blockSummary}`);
+      e.preventDefault();
+      return true;
+    },
+    keyCodes: [ctrlShiftI, metaShiftI],
+  };
+  ShortcutRegistry.registry.register(readFullBlockSummaryShortcut);
+}
+
+// A version of solving the 'where am I?' problem. Read the current block's
+// parent block.
+export function registerReadBlockParentSummary() {
+  const ctrlShiftP = ShortcutRegistry.registry.createSerializedKey(KeyCodes.P, [
+    KeyCodes.CTRL,
+    KeyCodes.SHIFT,
+  ]);
+  const metaShiftP = ShortcutRegistry.registry.createSerializedKey(KeyCodes.P, [
+    KeyCodes.META,
+    KeyCodes.SHIFT,
+  ]);
+  const readBlockParentSummaryShortcut: KeyboardShortcut = {
+    name: names.READ_BLOCK_PARENT_SUMMARY,
+    preconditionFn(workspace) {
+      return (
+        !workspace.isDragging() &&
+        !getFocusManager().ephemeralFocusTaken() &&
+        !!getFocusManager().getFocusedNode() &&
+        getFocusManager().getFocusedNode() instanceof BlockSvg
+      );
+    },
+    callback(workspace, e) {
+      const selectedBlock = getFocusManager().getFocusedNode() as BlockSvg;
+      const parentBlock = selectedBlock.getParent();
+      if (parentBlock) {
+        const blockSummary = parentBlock.computeAriaLabel(true);
+        aria.announceDynamicAriaState(`Parent block: ${blockSummary}`);
+      } else {
+        aria.announceDynamicAriaState('Current block has no parent');
+      }
+      e.preventDefault();
+      return true;
+    },
+    keyCodes: [ctrlShiftP, metaShiftP],
+  };
+  ShortcutRegistry.registry.register(readBlockParentSummaryShortcut);
+}
+
 /**
  * Registers all default keyboard shortcut item. This should be called once per
  * instance of KeyboardShortcutRegistry.
@@ -400,6 +474,8 @@ export function registerDefaultShortcuts() {
   registerPaste();
   registerUndo();
   registerRedo();
+  registerReadFullBlockSummary();
+  registerReadBlockParentSummary();
 }
 
 registerDefaultShortcuts();
