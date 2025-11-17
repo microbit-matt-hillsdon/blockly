@@ -132,10 +132,8 @@ export class FieldImage extends Field<string> {
     }
   }
 
-  override getAriaLabel() {
-    return [this.altText, this.getAriaName()]
-      .filter((item) => !!item)
-      .join(', ');
+  override getAriaValue(): string {
+    return this.altText;
   }
 
   /**
@@ -165,7 +163,7 @@ export class FieldImage extends Field<string> {
     if (this.isClickable()) {
       this.imageElement.style.cursor = 'pointer';
       aria.setRole(element, aria.Role.BUTTON);
-      aria.setState(element, aria.State.LABEL, this.getAriaLabel());
+      aria.setState(element, aria.State.LABEL, super.computeAriaLabel(true));
     } else {
       // The field isn't navigable unless it's clickable.
       aria.setRole(element, aria.Role.PRESENTATION);

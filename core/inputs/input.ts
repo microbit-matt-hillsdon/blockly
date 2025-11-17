@@ -334,11 +334,7 @@ export class Input {
         .flatMap((input) => {
           const fields = input.fieldRow.map((field) => {
             if (!field.isVisible()) return [];
-            return [
-              field.getLabelForBlockOutput() ??
-                field.getText() ??
-                field.getValue(),
-            ];
+            return [field.computeAriaLabel()];
           });
           return fields;
         })

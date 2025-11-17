@@ -263,20 +263,22 @@ export class BlockSvg
     return false;
   }
 
-  private computeAriaLabel(
+  computeAriaLabel(
     outputOption: 'full' | 'minimal' | 'minimalWithInputs' = 'full',
+    verbose: boolean = false,
   ): string {
-    let {blockSummary, inputCount} = buildBlockSummary(this);
+    let {blockSummary, inputCount} = buildBlockSummary(this, verbose);
     // Hack for if blocks using shadow boolean inputs.
     // We need to announce the preceding label, the logic value as well as
     // its aria (dropdown) and the fact that it is replaceable.
     if (this.isSimpleReporter()) {
       const field = Array.from(this.getFields())[0];
       if (field.isFullBlockField() && field.isCurrentlyEditable()) {
-        blockSummary = field.getAriaLabel() ?? '';
+        blockSummary = field.computeAriaLabel() ?? '';
         inputCount = 0;
       }
     }
+
     const inputSummary = inputCount
       ? `${inputCount} ${inputCount > 1 ? 'inputs' : 'input'}`
       : '';
@@ -2129,7 +2131,7 @@ interface BlockSummary {
   inputCount: number;
 }
 
-function buildBlockSummary(block: BlockSvg): BlockSummary {
+function buildBlockSummary(block: BlockSvg, verbose: boolean): BlockSummary {
   let inputCount = 0;
   function recursiveInputSummary(
     block: BlockSvg,
@@ -2146,11 +2148,7 @@ function buildBlockSummary(block: BlockSvg): BlockSummary {
           if (field.EDITABLE && !field.isFullBlockField() && !isNestedInput) {
             inputCount++;
           }
-          return [
-            field.getLabelForBlockOutput() ??
-              field.getText() ??
-              field.getValue(),
-          ];
+          return field.computeAriaLabel(verbose);
         });
         if (
           input.isVisible() &&

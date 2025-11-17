@@ -169,9 +169,6 @@ export abstract class Field<T = any>
   /** The element the click handler is bound to. */
   protected clickTarget_: Element | null = null;
 
-  /** Used as preferred ariaName for field. */
-  private ariaName: string | undefined;
-
   /**
    * The prefix field.
    *
@@ -254,7 +251,6 @@ export abstract class Field<T = any>
       this.setTooltip(parsing.replaceMessageReferences(config.tooltip));
     }
     this.config = config;
-    this.ariaName = this.config.ariaName;
   }
 
   /**
@@ -275,20 +271,51 @@ export abstract class Field<T = any>
     }
   }
 
-  getAriaLabel(): string | null {
-    return null;
+  /**
+   * Gets a an ARIA-friendly label representation of this field's type.
+   *
+   * @returns An ARIA representation of the field's type or null if it is
+   *     unspecified.
+   */
+  getAriaTypeName(): string | null {
+    return this.config?.ariaTypeName ?? null;
   }
 
-  getAriaName(): string | null {
-    return this.config?.ariaName ?? null;
-  }
+  /**
+   * Gets a an ARIA-friendly label representation of this field's value.
+   *
+   * @returns An ARIA representation of the field's value.
+   */
+  abstract getAriaValue(): string;
 
-  setAriaName(value: string): void {
-    this.ariaName = value;
-  }
-
-  getLabelForBlockOutput(): string | null {
-    return null;
+  /**
+   * Computes a descriptive ARIA label to represent this field with configurable
+   * verbosity.
+   *
+   * A 'verbose' label includes type information, if available, whereas a
+   * non-verbose label only contains the field's value.
+   *
+   * Note that this will always return the latest representation of the field's
+   * label which may differ from any previously set ARIA label for the field
+   * itself. Implementations are largely responsible for ensuring that the
+   * field's ARIA label is set correctly at relevant moments in the field's
+   * lifecycle (such as when its value changes).
+   *
+   * Finally, it is never guaranteed that implementations use the label returned
+   * by this method for their actual ARIA label. Some implementations may rely
+   * on other context to convey information like the field's value. Example:
+   * checkboxes represent their checked/non-checked status (i.e. value) through
+   * a separate ARIA property.
+   *
+   * @param verbose Whether to include the field's type information in the
+   *     returned label, if available.
+   */
+  computeAriaLabel(verbose: boolean = false): string {
+    const components: Array<string | null> = [this.getAriaValue()];
+    if (verbose) {
+      components.push(this.getAriaTypeName());
+    }
+    return components.filter((item) => item !== null).join(', ');
   }
 
   /**
@@ -1445,7 +1472,7 @@ export interface FieldConfig {
   type: string;
   name?: string;
   tooltip?: string;
-  ariaName?: string;
+  ariaTypeName?: string;
 }
 
 /**

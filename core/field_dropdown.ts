@@ -202,10 +202,8 @@ export class FieldDropdown extends Field<string> {
     this.recomputeAria();
   }
 
-  override getAriaLabel() {
-    return [this.computeLabelForOption(this.selectedOption), this.getAriaName()]
-      .filter((item) => !!item)
-      .join(', ');
+  override getAriaValue(): string {
+    return this.computeLabelForOption(this.selectedOption);
   }
 
   protected recomputeAria() {
@@ -220,7 +218,7 @@ export class FieldDropdown extends Field<string> {
       aria.clearState(element, aria.State.CONTROLS);
     }
 
-    aria.setState(element, aria.State.LABEL, this.getAriaLabel());
+    aria.setState(element, aria.State.LABEL, super.computeAriaLabel(true));
   }
 
   /**
