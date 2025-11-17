@@ -273,7 +273,7 @@ export class BlockSvg
     if (this.isSimpleReporter()) {
       const field = Array.from(this.getFields())[0];
       if (field.isFullBlockField() && field.isCurrentlyEditable()) {
-        blockSummary = field.getAriaLabel();
+        blockSummary = field.getAriaLabel() ?? '';
         inputCount = 0;
       }
     }

@@ -275,8 +275,8 @@ export abstract class Field<T = any>
     }
   }
 
-  getAriaLabel(): string {
-    return '';
+  getAriaLabel(): string | null {
+    return null;
   }
 
   getAriaName(): string | null {
