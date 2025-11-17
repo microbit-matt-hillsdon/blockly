@@ -280,14 +280,7 @@ export abstract class Field<T = any>
   }
 
   getAriaName(): string | null {
-    return (
-      this.ariaName ??
-      this.config?.name ??
-      this.config?.type ??
-      this.getSourceBlock()?.type ??
-      this.name ??
-      null
-    );
+    return this.config?.ariaName ?? null;
   }
 
   setAriaName(value: string): void {

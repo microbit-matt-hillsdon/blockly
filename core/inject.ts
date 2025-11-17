@@ -86,7 +86,7 @@ export function inject(
   const ariaAnnouncementSpan = document.createElement('span');
   ariaAnnouncementSpan.id = 'blocklyAriaAnnounce';
   dom.addClass(ariaAnnouncementSpan, 'hiddenForAria');
-  aria.setState(ariaAnnouncementSpan, aria.State.LIVE, 'polite');
+  aria.setState(ariaAnnouncementSpan, aria.State.LIVE, 'assertive');
   subContainer.appendChild(ariaAnnouncementSpan);
 
   // See: https://stackoverflow.com/a/48590836 for a reference.

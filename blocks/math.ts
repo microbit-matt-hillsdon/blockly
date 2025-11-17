@@ -33,6 +33,7 @@ export const blocks = createBlockDefinitionsFromJsonArray([
         'name': 'NUM',
         'ariaName': 'number',
         'value': 0,
+        'ariaName': 'Number',
       },
     ],
     'output': 'Number',
