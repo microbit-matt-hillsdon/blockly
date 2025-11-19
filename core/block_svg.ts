@@ -2069,6 +2069,7 @@ export class BlockSvg
       // TODO: Figure out how to deal with output connections.
       const surroundParent = this.currentConnectionCandidate.sourceBlock_;
       const announcementContext = [];
+      let announceBranch = false;
       announcementContext.push('Moving'); // TODO: Specialize for inserting?
       // NB: Old code here doesn't seem to handle parents correctly.
       if (this.currentConnectionCandidate.type === ConnectionType.INPUT_VALUE) {
@@ -2086,6 +2087,7 @@ export class BlockSvg
             this.currentConnectionCandidate
         ) {
           announcementContext.push('inside');
+          announceBranch = true;
         } else {
           if (
             this.currentConnectionCandidate.type ===
@@ -2097,7 +2099,11 @@ export class BlockSvg
           }
         }
       }
-      if (surroundParent) {
+      if (announceBranch) {
+        announcementContext.push(
+          this.currentConnectionCandidate.getParentInput()?.getFieldRowLabel(),
+        );
+      } else if (surroundParent) {
         announcementContext.push(
           // minimal to exclude block status, prefix, num inputs and children.
           // minimalWithInputs is as above, but includes number of inputs (useful when moving to inputs).
