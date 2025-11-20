@@ -2145,17 +2145,22 @@ function buildBlockSummary(block: BlockSvg, verbose: boolean): BlockSummary {
   ): string {
     return block.inputList
       .flatMap((input) => {
-        const fields = input.fieldRow.map((field) => {
-          if (!field.isVisible()) return;
-          // Introduced to avoid reading out mutator buttons in MakeCode.
-          if (field instanceof FieldImage) return;
-          // If the block is a full block field, we only want to know if it's an
-          // editable field if we're not directly on it.
-          if (field.EDITABLE && !field.isFullBlockField() && !isNestedInput) {
-            inputCount++;
-          }
-          return field.computeAriaLabel(verbose);
-        });
+        const fields = input.fieldRow
+          .filter((field) => {
+            if (!field.isVisible()) return false;
+            if (field instanceof FieldImage && field.isClickable()) {
+              return false;
+            }
+            return true;
+          })
+          .map((field) => {
+            // If the block is a full block field, we only want to know if it's an
+            // editable field if we're not directly on it.
+            if (field.EDITABLE && !field.isFullBlockField() && !isNestedInput) {
+              inputCount++;
+            }
+            return field.computeAriaLabel(verbose);
+          });
         if (
           input.isVisible() &&
           input.connection &&
