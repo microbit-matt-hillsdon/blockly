@@ -404,8 +404,11 @@ export function registerReadFullBlockSummary() {
     },
     callback(workspace, e) {
       const selectedBlock = getFocusManager().getFocusedNode() as BlockSvg;
+      const category = (selectedBlock as any)?.codeCard?.name?.split('.')[0];
       const blockSummary = selectedBlock.computeAriaLabel('full', true);
-      aria.announceDynamicAriaState(`Current block: ${blockSummary}`);
+      aria.announceDynamicAriaState(
+        `Current block: ${category ? `${category} section, ` : ''}${blockSummary}`,
+      );
       e.preventDefault();
       return true;
     },
@@ -430,9 +433,12 @@ export function registerReadBlockParentSummary() {
     callback(workspace, e) {
       const selectedBlock = getFocusManager().getFocusedNode() as BlockSvg;
       const parentBlock = selectedBlock.getParent();
+      const category = (parentBlock as any)?.codeCard?.name?.split('.')[0];
       if (parentBlock) {
         const blockSummary = parentBlock.computeAriaLabel('full', true);
-        aria.announceDynamicAriaState(`Parent block: ${blockSummary}`);
+        aria.announceDynamicAriaState(
+          `Parent block: ${category ? `${category} section, ` : ''}${blockSummary}`,
+        );
       } else {
         aria.announceDynamicAriaState('Current block has no parent');
       }
