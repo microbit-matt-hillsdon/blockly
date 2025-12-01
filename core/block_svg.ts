@@ -280,7 +280,9 @@ export class BlockSvg
     }
 
     const inputSummary = inputCount
-      ? `${inputCount} ${inputCount > 1 ? 'inputs' : 'input'}`
+      ? verbose
+        ? `${inputCount} ${inputCount > 1 ? 'inputs' : 'input'}`
+        : 'has inputs'
       : '';
 
     let currentBlock: BlockSvg | null = null;
@@ -315,9 +317,7 @@ export class BlockSvg
     const parentInput = (
       this.previousConnection ?? this.outputConnection
     )?.targetConnection?.getParentInput();
-    if (parentInput && parentInput.type === inputTypes.STATEMENT) {
-      prefix = `Begin ${parentInput.getFieldRowLabel()}, `;
-    } else if (
+    if (
       parentInput &&
       parentInput.type === inputTypes.VALUE &&
       this.getParent()?.statementInputCount
@@ -329,11 +329,11 @@ export class BlockSvg
     if (inputSummary && !this.statementInputCount) {
       additionalInfo = `${additionalInfo}${inputSummary}`;
     } else if (this.statementInputCount) {
-      const childBlockSummary = `${nestedStatementBlockCount} ${nestedStatementBlockCount === 1 ? 'child' : 'children'}`;
+      const childBlockSummary = `has ${nestedStatementBlockCount} ${nestedStatementBlockCount === 1 ? 'block' : 'blocks'} inside`;
       if (inputSummary) {
-        additionalInfo = `${additionalInfo}${inputSummary} and ${childBlockSummary}`;
+        additionalInfo = `${additionalInfo}${inputSummary}${verbose ? `, ${childBlockSummary}` : ''}`;
       } else {
-        additionalInfo = `${additionalInfo}${childBlockSummary}`;
+        additionalInfo = `${additionalInfo}${verbose ? childBlockSummary : ''}`;
       }
     }
     if (outputOption === 'minimal') {
@@ -351,12 +351,21 @@ export class BlockSvg
     if (this.workspace.isFlyout) {
       aria.setRole(this.pathObject.svgPath, aria.Role.TREEITEM);
     } else {
-      let value = 'block';
-      if (this.isShadow()) {
-        value = 'replaceable block';
+      let value = 'statement';
+      if (this.statementInputCount) {
+        value = 'container';
       } else if (this.outputConnection) {
-        value = 'input block';
+        const check = this.outputConnection.getCheck();
+        if (check?.includes('Boolean')) {
+          value = 'boolean';
+        } else {
+          value = 'value';
+        }
+        if (this.isShadow()) {
+          value = `replaceable ${value}`;
+        }
       }
+      value = `${value} block`;
       aria.setState(this.pathObject.svgPath, aria.State.ROLEDESCRIPTION, value);
       aria.setRole(this.pathObject.svgPath, aria.Role.FIGURE);
     }
@@ -2087,7 +2096,9 @@ export class BlockSvg
             this.currentConnectionCandidate
         ) {
           announcementContext.push('inside');
-          announceBranch = true;
+          if (surroundParent.statementInputCount > 1) {
+            announceBranch = true;
+          }
         } else {
           if (
             this.currentConnectionCandidate.type ===
@@ -2180,7 +2191,7 @@ function buildBlockSummary(block: BlockSvg, verbose: boolean): BlockSummary {
         return fields;
       })
       .filter(Boolean)
-      .join(' ');
+      .join(', ');
   }
 
   const blockSummary = recursiveInputSummary(block);
