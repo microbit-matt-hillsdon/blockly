@@ -392,14 +392,6 @@ export function registerRedo() {
 // A version of solving the 'where am I?' problem. Read out a more detailed
 // summary of the current selected block.
 export function registerReadFullBlockSummary() {
-  const ctrlShiftI = ShortcutRegistry.registry.createSerializedKey(KeyCodes.I, [
-    KeyCodes.CTRL,
-    KeyCodes.SHIFT,
-  ]);
-  const metaShiftI = ShortcutRegistry.registry.createSerializedKey(KeyCodes.I, [
-    KeyCodes.META,
-    KeyCodes.SHIFT,
-  ]);
   const readFullBlockSummaryShortcut: KeyboardShortcut = {
     name: names.READ_FULL_BLOCK_SUMMARY,
     preconditionFn(workspace) {
@@ -417,7 +409,7 @@ export function registerReadFullBlockSummary() {
       e.preventDefault();
       return true;
     },
-    keyCodes: [ctrlShiftI, metaShiftI],
+    keyCodes: [KeyCodes.I],
   };
   ShortcutRegistry.registry.register(readFullBlockSummaryShortcut);
 }
@@ -425,14 +417,6 @@ export function registerReadFullBlockSummary() {
 // A version of solving the 'where am I?' problem. Read the current block's
 // parent block.
 export function registerReadBlockParentSummary() {
-  const ctrlShiftP = ShortcutRegistry.registry.createSerializedKey(KeyCodes.P, [
-    KeyCodes.CTRL,
-    KeyCodes.SHIFT,
-  ]);
-  const metaShiftP = ShortcutRegistry.registry.createSerializedKey(KeyCodes.P, [
-    KeyCodes.META,
-    KeyCodes.SHIFT,
-  ]);
   const readBlockParentSummaryShortcut: KeyboardShortcut = {
     name: names.READ_BLOCK_PARENT_SUMMARY,
     preconditionFn(workspace) {
@@ -455,7 +439,7 @@ export function registerReadBlockParentSummary() {
       e.preventDefault();
       return true;
     },
-    keyCodes: [ctrlShiftP, metaShiftP],
+    keyCodes: [KeyCodes.P],
   };
   ShortcutRegistry.registry.register(readBlockParentSummaryShortcut);
 }
