@@ -16,7 +16,6 @@ import {isDeletable as isIDeletable} from './interfaces/i_deletable.js';
 import {isDraggable} from './interfaces/i_draggable.js';
 import {IFocusableNode} from './interfaces/i_focusable_node.js';
 import {KeyboardShortcut, ShortcutRegistry} from './shortcut_registry.js';
-import {aria} from './utils.js';
 import {Coordinate} from './utils/coordinate.js';
 import {KeyCodes} from './utils/keycodes.js';
 import {Rect} from './utils/rect.js';
@@ -34,8 +33,6 @@ export enum names {
   PASTE = 'paste',
   UNDO = 'undo',
   REDO = 'redo',
-  READ_FULL_BLOCK_SUMMARY = 'read_full_block_summary',
-  READ_BLOCK_PARENT_SUMMARY = 'read_block_parent_summary',
 }
 
 /**
@@ -389,67 +386,6 @@ export function registerRedo() {
   ShortcutRegistry.registry.register(redoShortcut);
 }
 
-// A version of solving the 'where am I?' problem. Read out a more detailed
-// summary of the current selected block.
-export function registerReadFullBlockSummary() {
-  const readFullBlockSummaryShortcut: KeyboardShortcut = {
-    name: names.READ_FULL_BLOCK_SUMMARY,
-    preconditionFn(workspace) {
-      return (
-        !workspace.isDragging() &&
-        !getFocusManager().ephemeralFocusTaken() &&
-        !!getFocusManager().getFocusedNode() &&
-        getFocusManager().getFocusedNode() instanceof BlockSvg
-      );
-    },
-    callback(workspace, e) {
-      const selectedBlock = getFocusManager().getFocusedNode() as BlockSvg;
-      const category = (selectedBlock as any)?.codeCard?.name?.split('.')[0];
-      const blockSummary = selectedBlock.computeAriaLabel('full', true);
-      aria.announceDynamicAriaState(
-        `Current block: ${category ? `${category} section, ` : ''}${blockSummary}`,
-      );
-      e.preventDefault();
-      return true;
-    },
-    keyCodes: [KeyCodes.I],
-  };
-  ShortcutRegistry.registry.register(readFullBlockSummaryShortcut);
-}
-
-// A version of solving the 'where am I?' problem. Read the current block's
-// parent block.
-export function registerReadBlockParentSummary() {
-  const readBlockParentSummaryShortcut: KeyboardShortcut = {
-    name: names.READ_BLOCK_PARENT_SUMMARY,
-    preconditionFn(workspace) {
-      return (
-        !workspace.isDragging() &&
-        !getFocusManager().ephemeralFocusTaken() &&
-        !!getFocusManager().getFocusedNode() &&
-        getFocusManager().getFocusedNode() instanceof BlockSvg
-      );
-    },
-    callback(workspace, e) {
-      const selectedBlock = getFocusManager().getFocusedNode() as BlockSvg;
-      const parentBlock = selectedBlock.getParent();
-      const category = (parentBlock as any)?.codeCard?.name?.split('.')[0];
-      if (parentBlock) {
-        const blockSummary = parentBlock.computeAriaLabel('full', true);
-        aria.announceDynamicAriaState(
-          `Parent block: ${category ? `${category} section, ` : ''}${blockSummary}`,
-        );
-      } else {
-        aria.announceDynamicAriaState('Current block has no parent');
-      }
-      e.preventDefault();
-      return true;
-    },
-    keyCodes: [KeyCodes.P],
-  };
-  ShortcutRegistry.registry.register(readBlockParentSummaryShortcut);
-}
-
 /**
  * Registers all default keyboard shortcut item. This should be called once per
  * instance of KeyboardShortcutRegistry.
@@ -464,8 +400,6 @@ export function registerDefaultShortcuts() {
   registerPaste();
   registerUndo();
   registerRedo();
-  registerReadFullBlockSummary();
-  registerReadBlockParentSummary();
 }
 
 registerDefaultShortcuts();

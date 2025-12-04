@@ -33,7 +33,6 @@ import {BlockDragStrategy} from './dragging/block_drag_strategy.js';
 import type {BlockMove} from './events/events_block_move.js';
 import {EventType} from './events/type.js';
 import * as eventUtils from './events/utils.js';
-import {FieldImage} from './field_image.js';
 import {FieldLabel} from './field_label.js';
 import {getFocusManager} from './focus_manager.js';
 import {IconType} from './icons/icon_types.js';
@@ -278,7 +277,6 @@ export class BlockSvg
         inputCount = 0;
       }
     }
-
     const inputSummary = inputCount
       ? verbose
         ? `${inputCount} ${inputCount > 1 ? 'inputs' : 'input'}`
@@ -2148,7 +2146,7 @@ interface BlockSummary {
   inputCount: number;
 }
 
-function buildBlockSummary(block: BlockSvg, verbose: boolean): BlockSummary {
+function buildBlockSummary(block: BlockSvg): BlockSummary {
   let inputCount = 0;
   function recursiveInputSummary(
     block: BlockSvg,
@@ -2156,22 +2154,15 @@ function buildBlockSummary(block: BlockSvg, verbose: boolean): BlockSummary {
   ): string {
     return block.inputList
       .flatMap((input) => {
-        const fields = input.fieldRow
-          .filter((field) => {
-            if (!field.isVisible()) return false;
-            if (field instanceof FieldImage && field.isClickable()) {
-              return false;
-            }
-            return true;
-          })
-          .map((field) => {
-            // If the block is a full block field, we only want to know if it's an
-            // editable field if we're not directly on it.
-            if (field.EDITABLE && !field.isFullBlockField() && !isNestedInput) {
-              inputCount++;
-            }
-            return field.computeAriaLabel(verbose);
-          });
+        const fields = input.fieldRow.map((field) => {
+          if (!field.isVisible()) return [];
+          // If the block is a full block field, we only want to know if it's an
+          // editable field if we're not directly on it.
+          if (field.EDITABLE && !field.isFullBlockField() && !isNestedInput) {
+            inputCount++;
+          }
+          return [field.getText() ?? field.getValue()];
+        });
         if (
           input.isVisible() &&
           input.connection &&
