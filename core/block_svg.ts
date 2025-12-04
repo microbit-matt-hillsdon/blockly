@@ -242,7 +242,10 @@ export class BlockSvg
     );
   }
 
-  computeAriaLabel(verbose: boolean = false): string {
+  computeAriaLabel(
+    verbose: boolean = false,
+    outputOption: 'full' | 'minimal' | 'minimalWithInputs' = 'full',
+  ): string {
     const {commaSeparatedSummary, inputCount} = buildBlockSummary(
       this,
       verbose,
@@ -296,7 +299,12 @@ export class BlockSvg
     if (inputSummary) {
       additionalInfo = `${additionalInfo}, ${inputSummary}`;
     }
-
+    if (outputOption === 'minimal') {
+      return commaSeparatedSummary;
+    }
+    if (outputOption === 'minimalWithInputs' && inputSummary) {
+      return `${commaSeparatedSummary}, ${inputSummary}`;
+    }
     return prefix + commaSeparatedSummary + ', ' + additionalInfo;
   }
 
@@ -2003,15 +2011,53 @@ export class BlockSvg
       // TODO: Figure out how to deal with output connections.
       const surroundParent = this.currentConnectionCandidate.sourceBlock_;
       const announcementContext = [];
+      let announceBranch = false;
       announcementContext.push('Moving'); // TODO: Specialize for inserting?
       // NB: Old code here doesn't seem to handle parents correctly.
       if (this.currentConnectionCandidate.type === ConnectionType.INPUT_VALUE) {
-        announcementContext.push('to', 'input');
+        const inputName =
+          this.currentConnectionCandidate.getParentInput()?.label ??
+          this.currentConnectionCandidate.getParentInput()?.name?.toLowerCase();
+        const announcementParts = ['to', inputName, 'input', 'in'].filter(
+          Boolean,
+        );
+        announcementContext.push(...announcementParts);
       } else {
-        announcementContext.push('to', 'child');
+        if (
+          surroundParent?.statementInputCount &&
+          this.currentConnectionCandidate.sourceBlock_.nextConnection !==
+            this.currentConnectionCandidate
+        ) {
+          announcementContext.push('inside');
+          if (surroundParent.statementInputCount > 1) {
+            announceBranch = true;
+          }
+        } else {
+          if (
+            this.currentConnectionCandidate.type ===
+            ConnectionType.PREVIOUS_STATEMENT
+          ) {
+            announcementContext.push('before');
+          } else {
+            announcementContext.push('after');
+          }
+        }
       }
-      if (surroundParent) {
-        announcementContext.push('of', surroundParent.computeAriaLabel());
+      if (announceBranch) {
+        announcementContext.push(
+          this.currentConnectionCandidate.getParentInput()?.getFieldRowLabel(),
+        );
+      } else if (surroundParent) {
+        announcementContext.push(
+          // minimal to exclude block status, prefix, num inputs and children.
+          // minimalWithInputs is as above, but includes number of inputs (useful when moving to inputs).
+          surroundParent.computeAriaLabel(
+            false,
+            this.currentConnectionCandidate.type === ConnectionType.INPUT_VALUE
+              ? 'minimalWithInputs'
+              : 'minimal',
+          ),
+        );
       }
 
       // If the block is currently being moved, announce the new block label so that the user understands where it is now.
@@ -2022,6 +2068,11 @@ export class BlockSvg
       aria.announceDynamicAriaState(
         `Moving unconstrained to coordinate x ${Math.round(newLoc.x)} and y ${Math.round(newLoc.y)}.`,
       );
+    } else {
+      // The block has been put in move mode or inserted from the flyout on to the workspace,
+      // but has no newLoc or currentConnectionCandidate. We want a simple announcement to let
+      // the user know the block is now in move mode.
+      aria.announceDynamicAriaState('Moving to workspace.');
     }
   }
 }
