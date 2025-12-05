@@ -260,42 +260,16 @@ export class BlockSvg
     return false;
   }
 
-  // Fix the insane number of commas!
   computeAriaLabel(
-    outputOption: 'full' | 'minimal' | 'minimalWithInputs' = 'full',
+    outputOption: 'full' | 'minimal' = 'full',
     verbose: boolean = false,
   ): string {
-    let {commaSeparatedSummary, inputCount} = buildBlockSummary(this, verbose);
-    // Hack for if blocks using shadow boolean inputs.
-    // We need to announce the preceding label, the logic value as well as
-    // its aria (dropdown) and the fact that it is replaceable.
-    if (this.isSimpleReporter()) {
-      const field = Array.from(this.getFields())[0];
-      if (field.isFullBlockField() && field.isCurrentlyEditable()) {
-        commaSeparatedSummary = field.computeAriaLabel() ?? '';
-        inputCount = 0;
-      }
-    }
-    let inputSummary = '';
-    if (inputCount > 1) {
-      inputSummary = 'has inputs';
-    } else if (inputCount === 1) {
-      inputSummary = 'has input';
+    const labelComponents = [];
+
+    if (!this.workspace.isFlyout && this.getRootBlock() === this) {
+      labelComponents.push('Begin stack');
     }
 
-    let blockModifiersText = '';
-    const modifiers = [];
-    if (!this.isEnabled()) {
-      modifiers.push('disabled');
-    }
-    if (this.isCollapsed()) {
-      modifiers.push('collapsed');
-    }
-    if (modifiers.length) {
-      blockModifiersText = modifiers.join(' ');
-    }
-
-    let prefix = '';
     const parentInput = (
       this.previousConnection ?? this.outputConnection
     )?.targetConnection?.getParentInput();
@@ -304,52 +278,66 @@ export class BlockSvg
       parentInput.type === inputTypes.VALUE &&
       this.getParent()?.statementInputCount
     ) {
-      prefix = `${parentInput.getFieldRowLabel()} `;
+      labelComponents.push(`${parentInput.getFieldRowLabel()}`);
     }
 
-    if (this.getRootBlock() === this) {
-      prefix = 'Begin stack, ' + prefix;
-    }
-
-    let additionalInfo = blockModifiersText ? `${blockModifiersText}, ` : '';
-    if (inputSummary) {
-      additionalInfo = `${additionalInfo}${inputSummary}`;
-    }
+    const {commaSeparatedSummary, inputCount} = buildBlockSummary(
+      this,
+      verbose,
+    );
+    labelComponents.push(commaSeparatedSummary);
 
     if (outputOption === 'minimal') {
       return commaSeparatedSummary;
     }
-    if (outputOption === 'minimalWithInputs' && inputSummary) {
-      return `${commaSeparatedSummary}, ${inputSummary}`;
+
+    if (!this.isEnabled()) {
+      labelComponents.push('disabled');
     }
-    return (
-      prefix +
-      commaSeparatedSummary +
-      (additionalInfo ? `, ${additionalInfo}` : '')
-    );
+    if (this.isCollapsed()) {
+      labelComponents.push('collapsed');
+    }
+
+    if (inputCount > 1) {
+      labelComponents.push('has inputs');
+    } else if (inputCount === 1) {
+      labelComponents.push('has input');
+    }
+
+    return labelComponents.join(', ');
   }
 
   private recomputeAriaRole() {
     if (this.workspace.isFlyout) {
       aria.setRole(this.pathObject.svgPath, aria.Role.TREEITEM);
     } else {
-      let value = 'statement';
-      if (this.statementInputCount) {
-        value = 'container';
-      } else if (this.outputConnection) {
-        const check = this.outputConnection.getCheck();
-        if (check?.includes('Boolean')) {
-          value = 'boolean';
-        } else {
-          value = 'value';
-        }
-        if (this.isShadow()) {
-          value = `replaceable ${value}`;
-        }
-      }
-      value = `${value} block`;
-      aria.setState(this.pathObject.svgPath, aria.State.ROLEDESCRIPTION, value);
+      const roleDescription = this.getAriaRoleDescription();
+      aria.setState(
+        this.pathObject.svgPath,
+        aria.State.ROLEDESCRIPTION,
+        roleDescription,
+      );
       aria.setRole(this.pathObject.svgPath, aria.Role.FIGURE);
+    }
+  }
+
+  /**
+   * Returns the ARIA role description for this block.
+   *
+   * Block definitions may override this method via a mixin to customize
+   * their role description.
+   *
+   * @returns The ARIA roledescription for this block.
+   */
+  protected getAriaRoleDescription() {
+    if (this.isShadow()) {
+      return 'replaceable block';
+    } else if (this.outputConnection) {
+      return 'value block';
+    } else if (this.statementInputCount) {
+      return 'container block';
+    } else {
+      return 'statement block';
     }
   }
 
@@ -2085,11 +2073,7 @@ export class BlockSvg
         announcementContext.push(
           // minimal to exclude block status, prefix, num inputs and children.
           // minimalWithInputs is as above, but includes number of inputs (useful when moving to inputs).
-          surroundParent.computeAriaLabel(
-            this.currentConnectionCandidate.type === ConnectionType.INPUT_VALUE
-              ? 'minimalWithInputs'
-              : 'minimal',
-          ),
+          surroundParent.computeAriaLabel('minimal'),
         );
       }
 

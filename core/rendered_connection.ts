@@ -335,7 +335,10 @@ export class RenderedConnection
     if (highlightSvg) {
       highlightSvg.style.display = '';
       aria.setRole(highlightSvg, aria.Role.FIGURE);
-      let roleDescription = 'Connection';
+      const connectionType =
+        this.type === ConnectionType.INPUT_VALUE ? 'value' : 'statement';
+      const roleDescription = `${connectionType} block position`;
+      aria.setState(highlightSvg, aria.State.ROLEDESCRIPTION, roleDescription);
       if (this.type === ConnectionType.NEXT_STATEMENT) {
         const parentInput =
           this.getParentInput() ??
@@ -348,7 +351,6 @@ export class RenderedConnection
             aria.State.LABEL,
             `End ${parentInput.getFieldRowLabel()}`,
           );
-          roleDescription = 'Statement input';
         }
       } else if (
         this.type === ConnectionType.INPUT_VALUE &&
@@ -359,15 +361,9 @@ export class RenderedConnection
           aria.State.LABEL,
           `${this.getParentInput()?.getFieldRowLabel()}`,
         );
-      } else if (this.type === ConnectionType.INPUT_VALUE) {
+      } else {
         aria.setState(highlightSvg, aria.State.LABEL, 'Empty');
-        if (this.getCheck()?.includes('Boolean')) {
-          roleDescription = 'Boolean input';
-        } else {
-          roleDescription = 'Value input';
-        }
       }
-      aria.setState(highlightSvg, aria.State.ROLEDESCRIPTION, roleDescription);
     }
   }
 
