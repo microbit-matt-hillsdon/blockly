@@ -275,6 +275,16 @@ export class BlockSvg
     )?.targetConnection?.getParentInput();
     if (
       parentInput &&
+      parentInput.type === inputTypes.STATEMENT &&
+      // The first statement input is redundant with the parent block's label.
+      parentInput !==
+        parentInput
+          .getSourceBlock()
+          .inputList.find((input) => input.type === inputTypes.STATEMENT)
+    ) {
+      labelComponents.push(`Begin ${parentInput.getFieldRowLabel()}`);
+    } else if (
+      parentInput &&
       parentInput.type === inputTypes.VALUE &&
       this.getParent()?.statementInputCount
     ) {
