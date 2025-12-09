@@ -2035,7 +2035,7 @@ export class BlockSvg
     newLoc?: Coordinate,
   ) {
     if (isCanceled) {
-      aria.announceDynamicAriaState('Canceled movement');
+      aria.announceDynamicAriaState('Canceled movement.');
       return;
     }
     if (!isMoving) return;
@@ -2090,7 +2090,7 @@ export class BlockSvg
 
       // If the block is currently being moved, announce the new block label so that the user understands where it is now.
       // TODO: Figure out how much recomputeAriaTreeItemDetailsRecursively needs to anticipate position if it won't be reannounced, and how much of that context should be included in the liveannouncement.
-      aria.announceDynamicAriaState(announcementContext.join(' '));
+      aria.announceDynamicAriaState(announcementContext.join(' ') + '.');
     } else if (newLoc) {
       // The block is being freely dragged.
       aria.announceDynamicAriaState(

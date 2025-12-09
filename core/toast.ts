@@ -96,16 +96,9 @@ export class Toast {
     workspace.getInjectionDiv().appendChild(toast);
     toast.dataset.toastId = options.id;
     toast.className = CLASS_NAME;
-
     const messageElement = toast.appendChild(document.createElement('div'));
     messageElement.className = MESSAGE_CLASS_NAME;
     messageElement.innerText = message;
-    aria.announceDynamicAriaState(
-      message,
-      assertiveness,
-      aria.Role.STATUS,
-      'toast',
-    );
     const closeButton = toast.appendChild(document.createElement('button'));
     closeButton.className = CLOSE_BUTTON_CLASS_NAME;
     aria.setState(closeButton, aria.State.LABEL, Msg['CLOSE']);
@@ -160,6 +153,11 @@ export class Toast {
     toast.addEventListener('mousemove', clearToastTimeout);
     toast.addEventListener('mouseleave', setToastTimeout);
     setToastTimeout();
+
+    aria.announceDynamicAriaState(message, {
+      assertiveness,
+      role: aria.Role.STATUS,
+    });
 
     return toast;
   }

@@ -202,12 +202,9 @@ export function getState(element: Element, stateName: State): string | null {
   return element.getAttribute(attrStateName);
 }
 
-type MessageType = 'general' | 'toast';
-
-const previousMessages: Record<MessageType, string> = {
-  'general': '',
-  'toast': '',
-};
+let ariaAnnounceTimeout: ReturnType<typeof setTimeout>;
+let ariaAnnounceHtml = '';
+let addBreakingSpace = false;
 
 /**
  * Assertively requests that the specified text be read to the user if a screen
@@ -229,25 +226,29 @@ const previousMessages: Record<MessageType, string> = {
  */
 export function announceDynamicAriaState(
   text: string,
-  assertiveness?: string,
-  role?: string,
-  type: MessageType = 'general',
+  options: {
+    assertiveness: string;
+    role: Role | null;
+  } = {
+    assertiveness: 'polite',
+    role: null,
+  },
 ) {
-  const elementId =
-    type === 'toast' ? 'blocklyToastAnnounce' : 'blocklyAriaAnnounce';
-  const ariaAnnouncementSpan = document.getElementById(elementId);
-  if (!ariaAnnouncementSpan) {
-    throw new Error(`Expected element with id ${elementId} to exist.`);
+  const ariaAnnouncementContainer = document.getElementById(
+    'blocklyAriaAnnounce',
+  );
+  if (!ariaAnnouncementContainer) {
+    throw new Error('Expected element with id blocklyAriaAnnounce to exist.');
   }
-  ariaAnnouncementSpan.textContent = '';
-  ariaAnnouncementSpan.ariaLive = assertiveness ?? 'polite';
-  ariaAnnouncementSpan.role = role ?? null;
-  const message =
-    previousMessages[type] === text
-      ? text.endsWith('.')
-        ? text.substring(0, text.length - 1)
-        : `${text}.`
-      : text;
-  ariaAnnouncementSpan.textContent = message;
-  previousMessages[type] = message;
+  const {assertiveness, role} = options;
+  ariaAnnouncementContainer.innerHTML = '';
+  setState(ariaAnnouncementContainer, State.LIVE, assertiveness);
+  ariaAnnounceHtml += `<p>${text}${addBreakingSpace ? '&nbsp;' : ''}</p>`;
+  addBreakingSpace = !addBreakingSpace;
+  clearTimeout(ariaAnnounceTimeout);
+  ariaAnnounceTimeout = setTimeout(() => {
+    setRole(ariaAnnouncementContainer, role);
+    ariaAnnouncementContainer.innerHTML = ariaAnnounceHtml;
+    ariaAnnounceHtml = '';
+  }, 10);
 }
