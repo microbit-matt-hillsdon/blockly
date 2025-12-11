@@ -425,11 +425,8 @@ export function registerReadFullBlockSummary() {
     callback(workspace, e) {
       const selectedBlock = workspace.getCursor().getSourceBlock();
       if (!selectedBlock) return false;
-      const category = (selectedBlock as any)?.codeCard?.name?.split('.')[0];
       const blockSummary = selectedBlock.computeAriaLabel('full', true);
-      aria.announceDynamicAriaState(
-        `Current block: ${category ? `${category} section, ` : ''}${blockSummary}`,
-      );
+      aria.announceDynamicAriaState(`Current block: ${blockSummary}`);
       e.preventDefault();
       return true;
     },
@@ -454,12 +451,9 @@ export function registerReadBlockParentSummary() {
       const selectedBlock = workspace.getCursor().getSourceBlock();
       if (!selectedBlock) return false;
       const parentBlock = selectedBlock.getParent();
-      const category = (parentBlock as any)?.codeCard?.name?.split('.')[0];
       if (parentBlock) {
         const blockSummary = parentBlock.computeAriaLabel('full', true);
-        aria.announceDynamicAriaState(
-          `Parent block: ${category ? `${category} section, ` : ''}${blockSummary}`,
-        );
+        aria.announceDynamicAriaState(`Parent block: ${blockSummary}`);
       } else {
         aria.announceDynamicAriaState('Current block has no parent');
       }
