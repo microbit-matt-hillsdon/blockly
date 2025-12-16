@@ -245,7 +245,9 @@ export class BlockSvg
     aria.setState(
       this.getFocusableElement(),
       aria.State.LABEL,
-      this.computeAriaLabel(),
+      !this.isInFlyout
+        ? this.computeAriaLabel()
+        : this.computeAriaLabelForFlyoutBlock(),
     );
   }
 
@@ -259,6 +261,10 @@ export class BlockSvg
       }
     }
     return false;
+  }
+
+  private computeAriaLabelForFlyoutBlock(): string {
+    return `${this.computeAriaLabel(true)}, block`;
   }
 
   computeAriaLabel(
@@ -323,7 +329,7 @@ export class BlockSvg
 
   private recomputeAriaRole() {
     if (this.workspace.isFlyout) {
-      aria.setRole(this.pathObject.svgPath, aria.Role.TREEITEM);
+      aria.setRole(this.pathObject.svgPath, aria.Role.LISTITEM);
     } else {
       const roleDescription = this.getAriaRoleDescription();
       aria.setState(
