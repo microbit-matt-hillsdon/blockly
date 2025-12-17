@@ -2068,7 +2068,12 @@ export class BlockSvg
       aria.announceDynamicAriaState('Canceled movement.');
       return;
     }
-    if (!isMoving) return;
+    if (!isMoving) {
+      if (!this.getParent()) {
+        aria.announceDynamicAriaState('Block placed.');
+      }
+      return;
+    }
     if (this.currentConnectionCandidate) {
       // TODO: Figure out general detachment.
       // TODO: Figure out how to deal with output connections.
