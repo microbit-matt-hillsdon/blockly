@@ -16,7 +16,11 @@
 import {BlockSvg} from '../block_svg.js';
 import {RenderedWorkspaceComment} from '../comments/rendered_workspace_comment.js';
 import {ConnectionType} from '../connection_type.js';
+import {Field} from '../field.js';
+import {FieldDropdown} from '../field_dropdown.js';
+import {FieldInput} from '../field_input.js';
 import {getFocusManager} from '../focus_manager.js';
+import {MutatorIcon} from '../icons.js';
 import type {IFocusableNode} from '../interfaces/i_focusable_node.js';
 import * as registry from '../registry.js';
 import {RenderedConnection} from '../rendered_connection.js';
@@ -84,6 +88,9 @@ export class LineCursor extends Marker {
    *     not set or there is no next value.
    */
   in(): IFocusableNode | null {
+    if (this.atEndOfLine()) {
+      return null;
+    }
     const curNode = this.getCurNode();
     if (!curNode) {
       return null;
@@ -132,6 +139,9 @@ export class LineCursor extends Marker {
    *     is not set or there is no previous value.
    */
   out(): IFocusableNode | null {
+    if (this.atStartOfLine()) {
+      return null;
+    }
     const curNode = this.getCurNode();
     if (!curNode) {
       return null;
@@ -150,7 +160,7 @@ export class LineCursor extends Marker {
   }
 
   /**
-   * Returns true iff the node to which we would navigate if in() were
+   * Returns true if the node to which we would navigate if in() were
    * called is the same as the node to which we would navigate if next() were
    * called - in effect, if the LineCursor is at the end of the 'current
    * line' of the program.
@@ -168,8 +178,61 @@ export class LineCursor extends Marker {
       this.getValidationFunction(NavigationDirection.NEXT),
       this.getNavigationLoops(),
     );
-
+    // TODO: Raise Blockly issue.
+    // Example: if statment with a value block condition and mutator icon
+    // (down navigates to the value block).
+    if (curNode instanceof MutatorIcon) {
+      return false;
+    }
+    console.log(inNode === nextNode);
+    console.log(curNode instanceof Field);
+    console.log(curNode instanceof BlockSvg && curNode.outputConnection);
+    console.log(this.getSourceBlockFromNode(curNode));
+    console.log(this.getSourceBlockFromNode(inNode));
+    // Workaround for blocks with multiple rows.
+    // See 'plot bar graph' block in MakeCode.
+    if (
+      inNode === nextNode &&
+      this.getSourceBlockFromNode(inNode)?.getParent() ===
+        this.getSourceBlockFromNode(curNode)?.getParent() &&
+      (curNode instanceof FieldInput ||
+        curNode instanceof FieldDropdown ||
+        (curNode instanceof BlockSvg && curNode.outputConnection)) &&
+      (inNode instanceof Field ||
+        (inNode instanceof BlockSvg && inNode.outputConnection))
+    ) {
+      return false;
+    }
     return inNode === nextNode;
+  }
+
+  atStartOfLine(): boolean {
+    const curNode = this.getCurNode();
+    if (!curNode) return false;
+    if (curNode instanceof BlockSvg) {
+      if (curNode.statementInputCount || !curNode.outputConnection) {
+        return true;
+      }
+      // Workaround specific to if block navigation.
+      if (curNode.outputConnection.targetBlock()?.type === 'controls_if') {
+        if (
+          curNode.outputConnection
+            .targetBlock()
+            ?.getInput('IF0')
+            ?.connection?.targetBlock() === curNode
+        ) {
+          return false;
+        }
+        return true;
+      }
+    }
+    if (
+      curNode instanceof RenderedConnection &&
+      curNode.type === ConnectionType.NEXT_STATEMENT
+    ) {
+      return true;
+    }
+    return false;
   }
 
   /**
