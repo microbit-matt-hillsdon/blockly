@@ -184,11 +184,6 @@ export class LineCursor extends Marker {
     if (curNode instanceof MutatorIcon) {
       return false;
     }
-    console.log(inNode === nextNode);
-    console.log(curNode instanceof Field);
-    console.log(curNode instanceof BlockSvg && curNode.outputConnection);
-    console.log(this.getSourceBlockFromNode(curNode));
-    console.log(this.getSourceBlockFromNode(inNode));
     // Workaround for blocks with multiple rows.
     // See 'plot bar graph' block in MakeCode.
     if (
