@@ -264,7 +264,7 @@ export class BlockSvg
   }
 
   private computeAriaLabelForFlyoutBlock(): string {
-    return `${this.computeAriaLabel(true)}, block`;
+    return `${this.computeAriaLabel()}, block`;
   }
 
   computeAriaLabel(
