@@ -234,7 +234,7 @@ export class BlockSvg
    * @internal
    */
   recomputeAriaLabel() {
-    if (this.isSimpleReporter(true, true)) return;
+    if (this.isSimpleReporter(true, true) && !this.isInFlyout) return;
 
     if (
       this.isSimpleReporterShadowBlockWithFullBlockField() &&
