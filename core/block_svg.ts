@@ -2309,7 +2309,10 @@ function buildBlockSummary(
 
           return [...fields, ...nestedSegments];
         } else {
-          return [...fields, {kind: 'input', text: 'empty value input'}];
+          const inputType = input.connection.getCheck()?.includes('Boolean')
+            ? 'boolean'
+            : 'value';
+          return [...fields, {kind: 'input', text: `empty ${inputType} input`}];
         }
       }
 
