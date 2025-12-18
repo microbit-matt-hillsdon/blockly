@@ -2984,7 +2984,6 @@ export class WorkspaceSvg
             : item.getFocusableElement();
         aria.setState(treeItemElem, aria.State.POSINSET, index + 1);
         aria.setState(treeItemElem, aria.State.SETSIZE, focusableItems.length);
-        aria.setState(treeItemElem, aria.State.LEVEL, 1); // They are always top-level.
       });
     }
   }
