@@ -171,6 +171,14 @@ export class Toolbox
         ComponentManager.Capability.DRAG_TARGET,
       ],
     });
+    const flyoutRegion = this.flyout.getWorkspace().getSvgGroup();
+    aria.setRole(flyoutRegion, aria.Role.PRESENTATION);
+    aria.clearState(flyoutRegion, aria.State.LABEL);
+    const flyoutcanvas = this.flyout.getWorkspace().getBlockCanvas();
+    if (flyoutcanvas) {
+      flyoutcanvas.id = 'flyout-block-canvas';
+      aria.setState(this.HtmlDiv, aria.State.OWNS, 'flyout-block-canvas');
+    }
     getFocusManager().registerTree(this, true);
   }
 
