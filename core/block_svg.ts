@@ -313,7 +313,7 @@ export class BlockSvg
       if (this.isCollapsed()) {
         labelComponents.push('collapsed');
       }
-      if (this.isShadow()) {
+      if (this.isShadow() && verbose) {
         labelComponents.push('replaceable');
       }
 
@@ -351,6 +351,9 @@ export class BlockSvg
    */
   protected getAriaRoleDescription() {
     if (this.outputConnection) {
+      if (this.outputConnection.getCheck()?.includes('Boolean')) {
+        return 'boolean block';
+      }
       return 'value block';
     } else if (this.statementInputCount) {
       return 'container block';
@@ -2305,6 +2308,8 @@ function buildBlockSummary(
           }
 
           return [...fields, ...nestedSegments];
+        } else {
+          return [...fields, {kind: 'input', text: 'empty value input'}];
         }
       }
 
