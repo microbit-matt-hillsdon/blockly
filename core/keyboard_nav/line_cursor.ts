@@ -346,6 +346,16 @@ export class LineCursor extends Marker {
       case NavigationDirection.IN:
       case NavigationDirection.OUT:
         return (candidate: IFocusableNode | null) => {
+          const curNode = this.getCurNode();
+          if (
+            (candidate instanceof RenderedConnection &&
+              candidate.type === ConnectionType.NEXT_STATEMENT) ||
+            (curNode instanceof RenderedConnection &&
+              curNode.type === ConnectionType.NEXT_STATEMENT)
+          ) {
+            return false;
+          }
+
           const candidateBlock = this.getSourceBlockFromNode(candidate);
           const currentBlock = this.getSourceBlock();
 
