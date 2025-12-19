@@ -345,7 +345,28 @@ export class LineCursor extends Marker {
     switch (direction) {
       case NavigationDirection.IN:
       case NavigationDirection.OUT:
-        return () => true;
+        return (candidate: IFocusableNode | null) => {
+          const candidateBlock = this.getSourceBlockFromNode(candidate);
+          const currentBlock = this.getSourceBlock();
+
+          // Preventing escaping the current block/comment/etc by:
+          // Disallow moving from a node with a block to a non-block node (other than a block comment editor)
+          // Disallow moving from a non-block node to a block node
+          // Disallow moving to the workspace
+          if (
+            (currentBlock && !candidateBlock) ||
+            (!currentBlock && candidateBlock) ||
+            candidate === this.workspace
+          ) {
+            return false;
+          }
+
+          if (!candidateBlock || !currentBlock) return true;
+
+          const currentParents = this.getOutputParents(currentBlock);
+          const candidateParents = this.getOutputParents(candidateBlock);
+          return candidateParents.intersection(currentParents).size > 0;
+        };
       case NavigationDirection.NEXT:
       case NavigationDirection.PREVIOUS:
         return (candidate: IFocusableNode | null) => {
@@ -477,6 +498,24 @@ export class LineCursor extends Marker {
     while (parent) {
       parents.add(parent);
       parent = parent.getParent();
+    }
+
+    return parents;
+  }
+
+  /**
+   * Returns a set of all of the parent blocks of the given block.
+   *
+   * @param block The block to retrieve the parents of.
+   * @returns A set of the parents of the given block.
+   */
+  private getOutputParents(block: BlockSvg): Set<BlockSvg> {
+    const parents = new Set<BlockSvg>();
+    parents.add(block);
+    let parent = block.outputConnection?.targetBlock();
+    while (parent) {
+      parents.add(parent);
+      parent = parent.outputConnection?.targetBlock();
     }
 
     return parents;
