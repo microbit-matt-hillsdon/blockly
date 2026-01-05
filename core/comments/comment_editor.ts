@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import type {BlockSvg} from '../block_svg.js';
 import * as browserEvents from '../browser_events.js';
+import type {RenderedWorkspaceComment} from '../comments/rendered_workspace_comment.js';
 import {getFocusManager} from '../focus_manager.js';
 import {IFocusableNode} from '../interfaces/i_focusable_node.js';
 import {IFocusableTree} from '../interfaces/i_focusable_tree.js';
@@ -39,6 +41,8 @@ export class CommentEditor implements IFocusableNode {
 
   /** The current text of the comment. Updates on text area change. */
   private text: string = '';
+
+  private parent?: BlockSvg | RenderedWorkspaceComment;
 
   constructor(
     public workspace: WorkspaceSvg,
@@ -206,5 +210,22 @@ export class CommentEditor implements IFocusableNode {
   canBeFocused(): boolean {
     if (this.id) return true;
     return false;
+  }
+
+  /**
+   * Sets the parent object that owns this comment editor.
+   *
+   * @param newParent The parent of this comment editor.
+   * @internal
+   */
+  setParent(newParent: BlockSvg | RenderedWorkspaceComment) {
+    this.parent = newParent;
+  }
+
+  /**
+   * Returns the parent object that owns this comment editor, if any.
+   */
+  getParent() {
+    return this.parent;
   }
 }

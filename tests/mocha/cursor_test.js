@@ -163,13 +163,13 @@ suite('Cursor', function () {
       assert.equal(curNode, this.blocks.E);
     });
 
-    test('Out - From first connection loop to last next connection', function () {
+    test('Out - From previous connection loop to last input connection on block', function () {
       const prevConnection = this.blocks.A.previousConnection;
       const prevConnectionNode = prevConnection;
       this.cursor.setCurNode(prevConnectionNode);
       this.cursor.out();
       const curNode = this.cursor.getCurNode();
-      assert.equal(curNode, this.blocks.D.nextConnection);
+      assert.equal(curNode, this.blocks.A.getInput('NAME4').connection);
     });
   });
 
@@ -252,37 +252,38 @@ suite('Cursor', function () {
 
     test('In - from field in nested statement block to next nested statement block', function () {
       this.cursor.setCurNode(this.secondStatement.getField('NAME'));
-      this.cursor.in();
+      this.cursor.next();
       // Skip over the next connection
-      this.cursor.in();
+      this.cursor.next();
       const curNode = this.cursor.getCurNode();
       assert.equal(curNode, this.thirdStatement);
     });
+
     test('In - from field in nested statement block to next stack', function () {
       this.cursor.setCurNode(this.thirdStatement.getField('NAME'));
-      this.cursor.in();
+      this.cursor.next();
       // Skip over the next connection
-      this.cursor.in();
+      this.cursor.next();
       const curNode = this.cursor.getCurNode();
       assert.equal(curNode, this.multiStatement2);
     });
 
-    test('Out - from nested statement block to last field of previous nested statement block', function () {
+    test('Out - from nested statement block to previous nested statement block', function () {
       this.cursor.setCurNode(this.thirdStatement);
-      this.cursor.out();
+      this.cursor.prev();
       // Skip over the previous next connection
-      this.cursor.out();
+      this.cursor.prev();
       const curNode = this.cursor.getCurNode();
-      assert.equal(curNode, this.secondStatement.getField('NAME'));
+      assert.equal(curNode, this.secondStatement);
     });
 
-    test('Out - from root block to last field of last nested statement block in previous stack', function () {
+    test('Out - from root block to last nested statement block in previous stack', function () {
       this.cursor.setCurNode(this.multiStatement2);
-      this.cursor.out();
+      this.cursor.prev();
       // Skip over the previous next connection
-      this.cursor.out();
+      this.cursor.prev();
       const curNode = this.cursor.getCurNode();
-      assert.equal(curNode, this.thirdStatement.getField('NAME'));
+      assert.equal(curNode, this.thirdStatement);
     });
   });
 

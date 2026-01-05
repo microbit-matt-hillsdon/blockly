@@ -13,6 +13,8 @@
 // Former goog.module ID: Blockly.Marker
 
 import {BlockSvg} from '../block_svg.js';
+import {TextInputBubble} from '../bubbles/textinput_bubble.js';
+import {CommentEditor} from '../comments/comment_editor.js';
 import {Field} from '../field.js';
 import {Icon} from '../icons/icon.js';
 import type {IFocusableNode} from '../interfaces/i_focusable_node.js';
@@ -69,6 +71,18 @@ export class Marker {
       return node.getSourceBlock();
     } else if (node instanceof Icon) {
       return node.getSourceBlock() as BlockSvg;
+    } else if (node instanceof TextInputBubble) {
+      const owner = node.getOwner();
+      if (owner instanceof BlockSvg) {
+        return owner;
+      } else if (owner) {
+        return this.getSourceBlockFromNode(owner);
+      }
+    } else if (node instanceof CommentEditor) {
+      const parent = node.getParent();
+      if (parent instanceof BlockSvg) {
+        return parent;
+      }
     }
 
     return null;

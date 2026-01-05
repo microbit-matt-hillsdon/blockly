@@ -31,6 +31,7 @@ import {Rect} from '../utils/rect.js';
 import {Size} from '../utils/size.js';
 import * as svgMath from '../utils/svg_math.js';
 import {WorkspaceSvg} from '../workspace_svg.js';
+import type {CommentEditor} from './comment_editor.js';
 import {CommentView} from './comment_view.js';
 import {WorkspaceComment} from './workspace_comment.js';
 
@@ -60,6 +61,7 @@ export class RenderedWorkspaceComment
     this.workspace = workspace;
 
     this.view = new CommentView(workspace, this.id);
+    (this.view.getEditorFocusableNode() as CommentEditor).setParent(this);
     // Set the size to the default size as defined in the superclass.
     this.view.setSize(this.getSize());
     this.view.setEditable(this.isEditable());

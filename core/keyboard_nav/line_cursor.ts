@@ -345,7 +345,34 @@ export class LineCursor extends Marker {
     switch (direction) {
       case NavigationDirection.IN:
       case NavigationDirection.OUT:
-        return () => true;
+        return (candidate: IFocusableNode | null) => {
+          const candidateBlock = this.getSourceBlockFromNode(candidate);
+          const currentBlock = this.getSourceBlock();
+
+          // Preventing escaping the current block/comment/etc by:
+          // Disallow moving from a node with a block to a non-block node (other than a block comment editor)
+          // Disallow moving from a non-block node to a block node
+          // Disallow moving to the workspace
+          if (
+            (currentBlock && !candidateBlock) ||
+            (!currentBlock && candidateBlock) ||
+            candidate === this.workspace
+          ) {
+            return false;
+          }
+
+          if (!candidateBlock || !currentBlock) return true;
+
+          const currentParents = this.getOutputParents(currentBlock);
+          const candidateParents = this.getOutputParents(candidateBlock);
+          // If we're navigating from a block (or nested element) to a block
+          // (or nested element), ensure that we're not crossing a statement
+          // block boundary (i.e. moving to a next or previous block vertically)
+          // by verifying that the two blocks in question are either the same
+          // or have a common parent accessible only by traversing output
+          // connections, meaning that they are part of the same row.
+          return candidateParents.intersection(currentParents).size > 0;
+        };
       case NavigationDirection.NEXT:
       case NavigationDirection.PREVIOUS:
         return (candidate: IFocusableNode | null) => {
@@ -447,6 +474,25 @@ export class LineCursor extends Marker {
     while (parent) {
       parents.add(parent);
       parent = parent.getParent();
+    }
+
+    return parents;
+  }
+
+  /**
+   * Returns a set of all of the parent blocks connected to an output of the
+   * given block or one of its parents. Also includes the given block.
+   *
+   * @param block The block to retrieve the output-connected parents of.
+   * @returns A set of the output-connected parents of the given block.
+   */
+  private getOutputParents(block: BlockSvg): Set<BlockSvg> {
+    const parents = new Set<BlockSvg>();
+    parents.add(block);
+    let parent = block.outputConnection?.targetBlock();
+    while (parent) {
+      parents.add(parent);
+      parent = parent.outputConnection?.targetBlock();
     }
 
     return parents;
