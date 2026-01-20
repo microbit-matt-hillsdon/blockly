@@ -55,8 +55,9 @@ export function inject(
     dom.addClass(subContainer, 'blocklyRTL');
   }
 
-  // Ignore the subcontainer in aria since it is not focusable
-  aria.setRole(subContainer, aria.Role.PRESENTATION);
+  // Allow key presses to reach the application key handlers instead of being
+  // intercepted by screen readers by default.
+  aria.setRole(subContainer, aria.Role.APPLICATION);
 
   containerElement!.appendChild(subContainer);
   const svg = createDom(subContainer, options);
