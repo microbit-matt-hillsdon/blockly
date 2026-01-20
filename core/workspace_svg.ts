@@ -411,6 +411,9 @@ export class WorkspaceSvg
     // Set up callbacks to refresh the toolbox when variables change
     this.addChangeListener(this.variableChangeCallback.bind(this));
 
+    /** Update aria-label when blocks change. */
+    this.addChangeListener(this.recomputeAriaLabel.bind(this));
+
     /** Object in charge of storing and updating the workspace theme. */
     this.themeManager_ = this.options.parentWorkspace
       ? this.options.parentWorkspace.getThemeManager()
@@ -736,6 +739,19 @@ export class WorkspaceSvg
     this.resizeHandlerWrapper = handler;
   }
 
+  recomputeAriaLabel() {
+    if (!this.isFlyout && !this.isMutator) {
+      const numStacks = this.getTopBlocks().length;
+      aria.setState(
+        this.svgGroup_,
+        aria.State.LABEL,
+        numStacks === 1
+          ? Msg['WORKSPACE_ARIA_LABEL_ONE_STACK']
+          : Msg['WORKSPACE_ARIA_LABEL'].replace('%1', numStacks.toString()),
+      );
+    }
+  }
+
   /**
    * Create the workspace DOM elements.
    *
@@ -771,7 +787,11 @@ export class WorkspaceSvg
       ariaLabel = 'Mutator Workspace';
       role = aria.Role.GENERIC;
     } else {
-      ariaLabel = Msg['WORKSPACE_ARIA_LABEL'];
+      const numStacks = this.getTopBlocks().length;
+      ariaLabel =
+        numStacks === 1
+          ? Msg['WORKSPACE_ARIA_LABEL_ONE_STACK']
+          : Msg['WORKSPACE_ARIA_LABEL'].replace('%1', numStacks.toString());
       role = aria.Role.REGION;
     }
     aria.setRole(this.svgGroup_, role);
@@ -2720,7 +2740,9 @@ export class WorkspaceSvg
   }
 
   /** See IFocusableNode.onNodeFocus. */
-  onNodeFocus(): void {}
+  onNodeFocus(): void {
+    this.recomputeAriaLabel();
+  }
 
   /** See IFocusableNode.onNodeBlur. */
   onNodeBlur(): void {}

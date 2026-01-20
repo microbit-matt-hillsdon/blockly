@@ -1607,8 +1607,13 @@ Blockly.Msg.WORKSPACE_COMMENT_DEFAULT_TEXT = 'Say something...';
 
 /** @type {string} */
 /// workspace - This text is read out when a user navigates to the workspace while
-/// using a screen reader.
-Blockly.Msg.WORKSPACE_ARIA_LABEL = 'Blockly Workspace';
+/// using a screen reader and there are 0 or >1 stacks of blocks.
+Blockly.Msg.WORKSPACE_ARIA_LABEL = "Blockly Workspace. %1 stacks of blocks";
+
+/** @type {string} */
+/// workspace - This text is read out when a user navigates to the workspace while
+/// using a screen reader and there is 1 stack of blocks.
+Blockly.Msg.WORKSPACE_ARIA_LABEL_ONE_STACK = "Blockly Workspace. 1 stack of blocks";
 
 /** @type {string} */
 /// This text is read out when a user navigates to the toolbox while using a
