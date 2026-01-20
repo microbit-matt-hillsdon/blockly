@@ -349,7 +349,7 @@ export class RenderedConnection
           aria.setState(
             highlightSvg,
             aria.State.LABEL,
-            `End ${parentInput.getFieldRowLabel()}.`,
+            `End ${parentInput.getFieldRowLabel()}`,
           );
         }
       } else if (
@@ -359,7 +359,7 @@ export class RenderedConnection
         aria.setState(
           highlightSvg,
           aria.State.LABEL,
-          `${this.getParentInput()?.getFieldRowLabel()}.`,
+          `${this.getParentInput()?.getFieldRowLabel()}`,
         );
       } else {
         aria.setState(highlightSvg, aria.State.LABEL, 'Empty');

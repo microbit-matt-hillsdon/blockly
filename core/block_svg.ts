@@ -329,7 +329,7 @@ export class BlockSvg
       }
     }
 
-    return labelComponents.join(', ') + '.';
+    return labelComponents.join(', ');
   }
 
   private recomputeAriaRole() {
