@@ -412,6 +412,9 @@ export class WorkspaceSvg
     // Set up callbacks to refresh the toolbox when variables change
     this.addChangeListener(this.variableChangeCallback.bind(this));
 
+    /** Update aria-label when blocks change. */
+    this.addChangeListener(this.recomputeAriaLabel.bind(this));
+
     /** Object in charge of storing and updating the workspace theme. */
     this.themeManager_ = this.options.parentWorkspace
       ? this.options.parentWorkspace.getThemeManager()
