@@ -737,6 +737,19 @@ export class WorkspaceSvg
     this.resizeHandlerWrapper = handler;
   }
 
+  recomputeAriaLabel() {
+    if (!this.isFlyout && !this.isMutator) {
+      aria.setState(
+        this.svgGroup_,
+        aria.State.LABEL,
+        Msg['WORKSPACE_ARIA_LABEL'].replace(
+          '%1',
+          this.getTopBlocks().length.toString(),
+        ),
+      );
+    }
+  }
+
   /**
    * Create the workspace DOM elements.
    *
@@ -772,7 +785,10 @@ export class WorkspaceSvg
       ariaLabel = 'Mutator Workspace';
       role = aria.Role.GENERIC;
     } else {
-      ariaLabel = Msg['WORKSPACE_ARIA_LABEL'];
+      ariaLabel = Msg['WORKSPACE_ARIA_LABEL'].replace(
+        '%1',
+        this.getTopBlocks().length.toString(),
+      );
       role = aria.Role.REGION;
     }
     aria.setRole(this.svgGroup_, role);
@@ -2728,7 +2744,9 @@ export class WorkspaceSvg
   }
 
   /** See IFocusableNode.onNodeFocus. */
-  onNodeFocus(): void {}
+  onNodeFocus(): void {
+    this.recomputeAriaLabel();
+  }
 
   /** See IFocusableNode.onNodeBlur. */
   onNodeBlur(): void {}

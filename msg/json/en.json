@@ -396,7 +396,7 @@
 	"PROCEDURES_IFRETURN_HELPURL": "https://c2.com/cgi/wiki?GuardClause",
 	"PROCEDURES_IFRETURN_WARNING": "Warning: This block may be used only within a function definition.",
 	"WORKSPACE_COMMENT_DEFAULT_TEXT": "Say something...",
-	"WORKSPACE_ARIA_LABEL": "Blockly Workspace",
+	"WORKSPACE_ARIA_LABEL": "Blockly Workspace. %1 stacks of blocks",
 	"TOOLBOX_ARIA_LABEL": "Toolbox",
 	"COLLAPSED_WARNINGS_WARNING": "Collapsed blocks contain warnings.",
 	"DIALOG_OK": "OK",
