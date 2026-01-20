@@ -416,6 +416,7 @@
 	"COPY_SHORTCUT": "Copy",
 	"PASTE_SHORTCUT": "Paste",
 	"HELP_PROMPT": "Press %1 for help on keyboard controls",
+	"WORKSPACE_HINT": "Use the up and down arrow keys to explore the blocks. Press %1 for help on keyboard controls",
 	"SHORTCUTS_GENERAL": "General",
 	"SHORTCUTS_EDITING": "Editing",
 	"SHORTCUTS_CODE_NAVIGATION": "Code navigation",

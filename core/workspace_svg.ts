@@ -2758,8 +2758,8 @@ export class WorkspaceSvg
             ?.getElement() ?? null
         );
       }
-      return this.getTopBlocks(true)[0] ?? null;
-    } else return null;
+    }
+    return null;
   }
 
   /** See IFocusableTree.getNestedTrees. */
