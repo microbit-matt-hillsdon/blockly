@@ -334,7 +334,7 @@ export class RenderedConnection
     const highlightSvg = this.findHighlightSvg();
     if (highlightSvg) {
       highlightSvg.style.display = '';
-      aria.setRole(highlightSvg, aria.Role.FIGURE);
+      aria.setRole(highlightSvg, aria.Role.IMG);
       const connectionType =
         this.type === ConnectionType.INPUT_VALUE ? 'value' : 'statement';
       const roleDescription = `${connectionType} block position`;

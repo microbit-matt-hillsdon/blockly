@@ -51,7 +51,7 @@ export enum Role {
   // ARIA role for a live region providing information.
   STATUS = 'status',
 
-  IMAGE = 'image',
+  IMG = 'img',
   FIGURE = 'figure',
   BUTTON = 'button',
   CHECKBOX = 'checkbox',

@@ -342,7 +342,7 @@ export class BlockSvg
         aria.State.ROLEDESCRIPTION,
         roleDescription,
       );
-      aria.setRole(this.pathObject.svgPath, aria.Role.FIGURE);
+      aria.setRole(this.pathObject.svgPath, aria.Role.IMG);
     }
   }
 
