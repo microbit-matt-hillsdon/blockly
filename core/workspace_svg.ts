@@ -742,13 +742,13 @@ export class WorkspaceSvg
 
   recomputeAriaLabel() {
     if (!this.isFlyout && !this.isMutator) {
+      const numStacks = this.getTopBlocks().length;
       aria.setState(
         this.svgGroup_,
         aria.State.LABEL,
-        Msg['WORKSPACE_ARIA_LABEL'].replace(
-          '%1',
-          this.getTopBlocks().length.toString(),
-        ),
+        numStacks === 1
+          ? Msg['WORKSPACE_ARIA_LABEL_ONE_STACK']
+          : Msg['WORKSPACE_ARIA_LABEL'].replace('%1', numStacks.toString()),
       );
     }
   }
@@ -788,10 +788,11 @@ export class WorkspaceSvg
       ariaLabel = 'Mutator Workspace';
       role = aria.Role.GENERIC;
     } else {
-      ariaLabel = Msg['WORKSPACE_ARIA_LABEL'].replace(
-        '%1',
-        this.getTopBlocks().length.toString(),
-      );
+      const numStacks = this.getTopBlocks().length;
+      ariaLabel =
+        numStacks === 1
+          ? Msg['WORKSPACE_ARIA_LABEL_ONE_STACK']
+          : Msg['WORKSPACE_ARIA_LABEL'].replace('%1', numStacks.toString());
       role = aria.Role.REGION;
     }
     aria.setRole(this.svgGroup_, role);
