@@ -337,7 +337,7 @@ export class RenderedConnection
       aria.setRole(highlightSvg, aria.Role.IMG);
       const connectionType =
         this.type === ConnectionType.INPUT_VALUE ? 'value' : 'statement';
-      const roleDescription = `${connectionType} block position`;
+      const roleDescription = `${connectionType} position`;
       aria.setState(highlightSvg, aria.State.ROLEDESCRIPTION, roleDescription);
       if (this.type === ConnectionType.NEXT_STATEMENT) {
         const parentInput =
