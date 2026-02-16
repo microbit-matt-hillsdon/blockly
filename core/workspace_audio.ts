@@ -34,6 +34,8 @@ export class WorkspaceAudio {
   /** Whether the audio is muted or not. */
   private muted: boolean = false;
 
+  private context: AudioContext | null = null;
+
   /**
    * @param parentWorkspace The parent of the workspace this audio object
    *     belongs to, or null.
@@ -188,21 +190,22 @@ export class WorkspaceAudio {
     if (!this.isPlayingAllowed()) return;
     this.lastSound = new Date();
 
-    const context = new AudioContext();
-
-    const oscillator = context.createOscillator();
+    if (!this.context) {
+      this.context = new AudioContext();
+    }
+    const oscillator = this.context.createOscillator();
     oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(tone, context.currentTime);
+    oscillator.frequency.setValueAtTime(tone, this.context.currentTime);
 
-    const gainNode = context.createGain();
-    gainNode.gain.setValueAtTime(0, context.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.5, context.currentTime + 0.01); // Fade in
-    gainNode.gain.linearRampToValueAtTime(0, context.currentTime + 0.2); // Fade out
+    const gainNode = this.context.createGain();
+    gainNode.gain.setValueAtTime(0, this.context.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.5, this.context.currentTime + 0.01); // Fade in
+    gainNode.gain.linearRampToValueAtTime(0, this.context.currentTime + 0.2); // Fade out
 
     oscillator.connect(gainNode);
-    gainNode.connect(context.destination);
+    gainNode.connect(this.context.destination);
 
-    oscillator.start(context.currentTime);
-    oscillator.stop(context.currentTime + 0.2);
+    oscillator.start(this.context.currentTime);
+    oscillator.stop(this.context.currentTime + 0.2);
   }
 }
