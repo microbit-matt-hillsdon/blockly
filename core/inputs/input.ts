@@ -17,8 +17,9 @@ import '../field_label.js';
 import type {Block} from '../block.js';
 import type {BlockSvg} from '../block_svg.js';
 import type {Connection} from '../connection.js';
-import type {ConnectionType} from '../connection_type.js';
+import {ConnectionType} from '../connection_type.js';
 import type {Field} from '../field.js';
+import {FieldImage} from '../field_image.js';
 import * as fieldRegistry from '../field_registry.js';
 import {RenderedConnection} from '../rendered_connection.js';
 import {Align} from './align.js';
@@ -321,12 +322,49 @@ export class Input {
         return `${label} ${field.getValue()}`;
       }, '')
       .trim();
+    const recursiveInputSummary = (inputs: Input[]): string => {
+      return inputs
+        .flatMap((input) => {
+          const fields = input.fieldRow.map((field) => {
+            if (!field.isVisible()) return undefined;
+            // Introduced to avoid reading out mutator buttons in MakeCode.
+            if (field instanceof FieldImage) return undefined;
+            // If the block is a full block field, we only want to know if it's an
+            // editable field if we're not directly on it.
+            return field.computeAriaLabel();
+          });
+          if (
+            input.isVisible() &&
+            input.connection &&
+            input.connection.type === ConnectionType.INPUT_VALUE
+          ) {
+            const targetBlock = input.connection.targetBlock();
+            if (targetBlock) {
+              return [
+                ...fields,
+                recursiveInputSummary((targetBlock as BlockSvg).inputList),
+              ];
+            }
+          }
+          return fields;
+        })
+        .filter(Boolean)
+        .join(', ');
+    };
     if (!fieldRowLabel) {
+      let inputsInRange: Input[] = [];
       const inputs = this.getSourceBlock().inputList;
-      const index = inputs.indexOf(this);
-      if (index > 0) {
-        return inputs[index - 1].getFieldRowLabel();
+      const currentIndex = inputs.indexOf(this);
+      const precedingInputs = inputs.slice(0, currentIndex);
+      const startingIndex = precedingInputs.findLastIndex(
+        (input) => input.type === inputTypes.STATEMENT && input !== this,
+      );
+      if (startingIndex !== -1) {
+        inputsInRange = precedingInputs.slice(startingIndex);
+      } else {
+        inputsInRange = precedingInputs;
       }
+      return recursiveInputSummary(inputsInRange);
     }
     return fieldRowLabel;
   }
