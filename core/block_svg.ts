@@ -234,7 +234,12 @@ export class BlockSvg
    * @internal
    */
   recomputeAriaLabel() {
-    if (this.isSimpleReporter(true, true)) return;
+    if (
+      this.isSimpleReporter(true, true) &&
+      !this.isInFlyout &&
+      this.getParent()?.type !== 'controls_if'
+    )
+      return;
 
     aria.setState(
       this.getFocusableElement(),
