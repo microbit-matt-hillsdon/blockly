@@ -432,7 +432,28 @@ export class LineCursor extends Marker {
             // candidate; it follows that it must be on the same row as its
             // parent.
             if (candidate.outputConnection?.targetBlock()?.getInputsInline()) {
-              return false;
+              // This is a hack to allow visiting input connections in if statements
+              // in MakeCode where the inputs are inline (mutators).
+              if (currentBlock.type === 'controls_if') {
+                if (direction === NavigationDirection.NEXT) {
+                  // Don't go to the first input on the if row when moving down.
+                  // See https://github.com/google/blockly-keyboard-experimentation/issues/762
+                  const target =
+                    currentBlock.inputList[0].connection?.targetBlock();
+                  if (candidate === target) {
+                    return false;
+                  }
+                }
+                return currentBlock.inputList.some(
+                  (i) => i.connection?.targetBlock() === candidate,
+                );
+              }
+              if (
+                candidate.outputConnection?.targetBlock()?.type !==
+                'controls_if'
+              ) {
+                return false;
+              }
             }
 
             const candidateParents = this.getParents(candidate);
