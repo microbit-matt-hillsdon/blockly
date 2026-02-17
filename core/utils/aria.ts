@@ -17,6 +17,10 @@ const ROLE_ATTRIBUTE = 'role';
  * Copied from Closure's goog.a11y.aria.Role
  */
 export enum Role {
+  // ARIA role for an application. Switches screen reader mode to allow
+  // key presses to pass through to the application.
+  APPLICATION = 'application',
+
   // ARIA role for a group of related elements like tree item siblings.
   GROUP = 'group',
 
@@ -47,7 +51,7 @@ export enum Role {
   // ARIA role for a live region providing information.
   STATUS = 'status',
 
-  IMAGE = 'image',
+  IMG = 'img',
   FIGURE = 'figure',
   BUTTON = 'button',
   CHECKBOX = 'checkbox',
