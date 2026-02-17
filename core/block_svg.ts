@@ -2046,29 +2046,63 @@ export class BlockSvg
     newLoc?: Coordinate,
   ) {
     if (isCanceled) {
-      aria.announceDynamicAriaState('Canceled movement');
+      aria.announceDynamicAriaState('Canceled movement.');
       return;
     }
-    if (!isMoving) return;
+    if (!isMoving) {
+      if (!this.getParent()) {
+        aria.announceDynamicAriaState('Block placed.');
+      }
+      return;
+    }
     if (this.currentConnectionCandidate) {
       // TODO: Figure out general detachment.
       // TODO: Figure out how to deal with output connections.
       const surroundParent = this.currentConnectionCandidate.sourceBlock_;
       const announcementContext = [];
+      let announceBranch = false;
       announcementContext.push('Moving'); // TODO: Specialize for inserting?
       // NB: Old code here doesn't seem to handle parents correctly.
       if (this.currentConnectionCandidate.type === ConnectionType.INPUT_VALUE) {
-        announcementContext.push('to', 'input');
+        const inputName =
+          this.currentConnectionCandidate.getParentInput()?.label ??
+          this.currentConnectionCandidate.getParentInput()?.name?.toLowerCase();
+        const announcementParts = ['to', inputName, 'input', 'in'].filter(
+          Boolean,
+        );
+        announcementContext.push(...announcementParts);
       } else {
-        announcementContext.push('to', 'child');
+        if (
+          surroundParent?.statementInputCount &&
+          this.currentConnectionCandidate.sourceBlock_.nextConnection !==
+            this.currentConnectionCandidate
+        ) {
+          announcementContext.push('inside');
+          if (surroundParent.statementInputCount > 1) {
+            announceBranch = true;
+          }
+        } else {
+          if (
+            this.currentConnectionCandidate.type ===
+            ConnectionType.PREVIOUS_STATEMENT
+          ) {
+            announcementContext.push('before');
+          } else {
+            announcementContext.push('after');
+          }
+        }
       }
-      if (surroundParent) {
-        announcementContext.push('of', surroundParent.computeAriaLabel());
+      if (announceBranch) {
+        announcementContext.push(
+          this.currentConnectionCandidate.getParentInput()?.getFieldRowLabel(),
+        );
+      } else if (surroundParent) {
+        announcementContext.push(surroundParent.computeAriaLabel(false, true));
       }
 
       // If the block is currently being moved, announce the new block label so that the user understands where it is now.
       // TODO: Figure out how much recomputeAriaTreeItemDetailsRecursively needs to anticipate position if it won't be reannounced, and how much of that context should be included in the liveannouncement.
-      aria.announceDynamicAriaState(announcementContext.join(' '));
+      aria.announceDynamicAriaState(announcementContext.join(' ') + '.');
     } else if (newLoc) {
       // The block is being freely dragged.
       const direction = this.diff(prevLoc, newLoc);
@@ -2089,7 +2123,11 @@ export class BlockSvg
       } else if (direction === CoordinateShift.MOVE_NORTHWEST) {
         aria.announceDynamicAriaState('Moved block up and left.');
       }
-      // Else don't announce anything because the block didn't move.
+    } else {
+      // The block has been put in move mode or inserted from the flyout on to the workspace,
+      // but has no newLoc or currentConnectionCandidate. We want a simple announcement to let
+      // the user know the block is now in move mode.
+      aria.announceDynamicAriaState('Moving to workspace.');
     }
   }
 

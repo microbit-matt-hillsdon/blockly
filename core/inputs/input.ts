@@ -30,6 +30,8 @@ export class Input {
   /** Alignment of input's fields (left, right or centre). */
   align = Align.LEFT;
 
+  label: string | null = null;
+
   /** Is the input visible? */
   private visible = true;
 
@@ -272,6 +274,10 @@ export class Input {
     for (const field of this.fieldRow) {
       field.init();
     }
+  }
+
+  setLabel(value: string) {
+    this.label = value;
   }
 
   /**
