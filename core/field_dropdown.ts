@@ -211,7 +211,7 @@ export class FieldDropdown extends Field<string> {
     const isInFlyout = this.getSourceBlock()?.workspace?.isFlyout || false;
     const element = this.getFocusableElement();
     if (!isInFlyout) {
-      aria.setRole(element, aria.Role.COMBOBOX);
+      aria.setRole(element, aria.Role.BUTTON);
       aria.setState(element, aria.State.HASPOPUP, aria.Role.LISTBOX);
       aria.setState(element, aria.State.EXPANDED, !!this.menu_);
       if (this.menu_) {
