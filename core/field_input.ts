@@ -190,7 +190,7 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
     const isInFlyout = this.getSourceBlock()?.workspace?.isFlyout || false;
     if (!isInFlyout) {
       aria.setRole(element, aria.Role.BUTTON);
-      aria.setState(element, aria.State.LABEL, super.computeAriaLabel());
+      aria.setState(element, aria.State.LABEL, super.computeAriaLabel(true));
     } else {
       aria.setState(element, aria.State.HIDDEN, true);
     }
