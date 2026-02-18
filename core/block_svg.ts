@@ -256,7 +256,12 @@ export class BlockSvg
   ): string {
     const labelComponents = [];
 
-    if (!this.workspace.isFlyout && this.getRootBlock() === this) {
+    if (
+      !this.workspace.isFlyout &&
+      this.getRootBlock() === this &&
+      !this.dragging &&
+      !minimal
+    ) {
       labelComponents.push('Begin stack');
     }
 
