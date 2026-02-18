@@ -198,7 +198,11 @@ export class FlyoutButton
         .subscribe(this.svgText, 'flyoutForegroundColour', 'fill');
     }
     if (this.isFlyoutLabel) {
-      aria.setState(this.svgFocusableGroup, aria.State.LABEL, text);
+      aria.setState(
+        this.svgFocusableGroup,
+        aria.State.LABEL,
+        `${text}, heading`,
+      );
     } else {
       aria.setState(
         this.svgFocusableGroup,
