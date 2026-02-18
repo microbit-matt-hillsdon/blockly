@@ -333,6 +333,9 @@ export class BlockSvg
    */
   protected getAriaRoleDescription() {
     if (this.outputConnection) {
+      if (this.outputConnection.getCheck()?.includes('Boolean')) {
+        return 'boolean block';
+      }
       return 'value block';
     } else if (this.statementInputCount) {
       return 'container block';
@@ -2236,7 +2239,6 @@ function buildBlockSummary(
           if (targetBlock === currentBlock) {
             nestedSegments.unshift({kind: 'label', text: 'Current block: '});
           }
-
           if (!isNestedInput) {
             // treat the whole nested summary as a single input segment
             const nestedText = nestedSegments.map((s) => s.text).join(' ');
@@ -2244,6 +2246,11 @@ function buildBlockSummary(
           }
 
           return [...fields, ...nestedSegments];
+        } else {
+          const inputType = input.connection.getCheck()?.includes('Boolean')
+            ? 'boolean'
+            : 'value';
+          return [...fields, {kind: 'input', text: `empty ${inputType} input`}];
         }
       }
 
