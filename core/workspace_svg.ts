@@ -20,6 +20,7 @@ import './events/events_viewport.js';
 
 import type {Block} from './block.js';
 import {BlockSvg} from './block_svg.js';
+import {ToolboxCategory} from './blockly.js';
 import type {BlocklyOptions} from './blockly_options.js';
 import * as browserEvents from './browser_events.js';
 import {TextInputBubble} from './bubbles/textinput_bubble.js';
@@ -2944,6 +2945,20 @@ export class WorkspaceSvg
     // Flyout workspaces require special arrangement to account for items.
     const flyout = this.targetWorkspace?.getFlyout();
     if (this.isFlyout && flyout) {
+      const toolbox = this.targetWorkspace?.getToolbox();
+      if (toolbox) {
+        const categoryName = (
+          toolbox.getSelectedItem() as ToolboxCategory
+        )?.getName();
+        const blockCanvas = flyout.getWorkspace().getBlockCanvas();
+        if (categoryName && blockCanvas) {
+          aria.setState(
+            blockCanvas,
+            aria.State.LABEL,
+            `${categoryName} blocks`,
+          );
+        }
+      }
       const focusableItems = flyout
         .getContents()
         .map((item) => item.getElement())
