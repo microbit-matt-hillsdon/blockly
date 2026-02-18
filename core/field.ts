@@ -331,7 +331,13 @@ export abstract class Field<T = any>
     if (verbose) {
       components.push(this.getAriaTypeName());
     }
-    return components.filter((item) => item !== null).join(', ');
+    return components
+      .map((item) => {
+        if (item === '') return 'empty string';
+        return item;
+      })
+      .filter((item) => item !== null)
+      .join(', ');
   }
 
   /**
