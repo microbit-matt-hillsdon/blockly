@@ -295,7 +295,7 @@ export class BlockSvg
       if (this.isCollapsed()) {
         labelComponents.push('collapsed');
       }
-      if (this.isShadow()) {
+      if (this.isShadow() && verbose) {
         labelComponents.push('replaceable');
       }
 
