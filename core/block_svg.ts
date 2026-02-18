@@ -334,13 +334,13 @@ export class BlockSvg
   protected getAriaRoleDescription() {
     if (this.outputConnection) {
       if (this.outputConnection.getCheck()?.includes('Boolean')) {
-        return 'boolean block';
+        return 'boolean';
       }
-      return 'value block';
+      return 'value';
     } else if (this.statementInputCount) {
-      return 'container block';
+      return 'container';
     } else {
-      return 'statement block';
+      return 'statement';
     }
   }
 
