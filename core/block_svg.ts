@@ -236,11 +236,10 @@ export class BlockSvg
    * @internal
    */
   recomputeAriaLabel() {
-    if (this.isSimpleReporter(true, true) && !this.isInFlyout) return;
-
     if (
-      this.isSimpleReporterShadowBlockWithFullBlockField() &&
-      this.getParent()?.type !== 'controls_if'
+      this.isSimpleReporter(true, true) &&
+      this.getParent()?.type !== 'controls_if' &&
+      !this.isInFlyout
     )
       return;
 
