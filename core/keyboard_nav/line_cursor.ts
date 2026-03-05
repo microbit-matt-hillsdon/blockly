@@ -331,6 +331,103 @@ export class LineCursor extends Marker {
   }
 
   /**
+   * Walks up from a block via output connections to find an ancestor
+   * controls_if block, or returns null if none exists.
+   */
+  private getControlsIfAncestor(block: BlockSvg | null): BlockSvg | null {
+    let b = block;
+    while (b) {
+      if (b.type === 'controls_if') return b;
+      const target = b.outputConnection?.targetConnection;
+      if (!target) break;
+      b = target.getSourceBlock() as BlockSvg;
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the row containing the given input index has a boolean /
+   * value input connection anywhere before it within the same row.
+   */
+  private controlsIfRowHasBooleanInput(
+    ifBlock: BlockSvg,
+    inputIndex: number,
+  ): boolean {
+    for (let i = inputIndex - 1; i >= 0; i--) {
+      const inp = ifBlock.inputList[i];
+      if (inp.connection?.type === ConnectionType.NEXT_STATEMENT) break;
+      if (inp.connection?.type === ConnectionType.INPUT_VALUE) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Returns the index in ifBlock.inputList that the given node belongs to,
+   * walking up via output connections if the node is inside a connected block.
+   * Returns -1 if the node is the ifBlock itself or cannot be determined.
+   */
+  private getControlsIfInputIndex(
+    ifBlock: BlockSvg,
+    node: IFocusableNode,
+  ): number {
+    if (node === ifBlock) return -1;
+
+    let block: BlockSvg | null =
+      node instanceof BlockSvg
+        ? node
+        : typeof (node as any).getSourceBlock === 'function'
+          ? (node as any).getSourceBlock()
+          : null;
+
+    while (block) {
+      const target = block.outputConnection?.targetConnection;
+      if (!target) break;
+      if (target.getSourceBlock() === ifBlock) {
+        const parentInput = target.getParentInput();
+        if (parentInput) return ifBlock.inputList.indexOf(parentInput);
+        break;
+      }
+      block = target.getSourceBlock() as BlockSvg;
+    }
+
+    const parentInput =
+      typeof (node as any).getParentInput === 'function'
+        ? (node as any).getParentInput()
+        : null;
+    return parentInput ? ifBlock.inputList.indexOf(parentInput) : -1;
+  }
+
+  /**
+   * Returns true if two nodes are on the same row of a controls_if block,
+   * where rows are separated by NEXT_STATEMENT inputs.
+   */
+  private isOnSameControlsIfRow(
+    ifBlock: BlockSvg,
+    a: IFocusableNode | null,
+    b: IFocusableNode | null,
+  ): boolean {
+    if (!a || !b) return true;
+
+    const aIdx = this.getControlsIfInputIndex(ifBlock, a);
+
+    // Never navigate back to the block itself from within a row, unless
+    // we're on the first row (where moving left should reach the block).
+    if (b === ifBlock) {
+      return !ifBlock.inputList
+        .slice(0, aIdx)
+        .some((inp) => inp.connection?.type === ConnectionType.NEXT_STATEMENT);
+    }
+
+    const bIdx = this.getControlsIfInputIndex(ifBlock, b);
+    if (aIdx === -1 || bIdx === -1) return true;
+
+    const [lo, hi] = aIdx < bIdx ? [aIdx, bIdx] : [bIdx, aIdx];
+    return !ifBlock.inputList
+      .slice(lo, hi)
+      .some((inp) => inp.connection?.type === ConnectionType.NEXT_STATEMENT);
+  }
+
+  /**
    * Returns a function that will be used to determine whether a candidate for
    * navigation is valid.
    *
@@ -359,10 +456,6 @@ export class LineCursor extends Marker {
           const candidateBlock = this.getSourceBlockFromNode(candidate);
           const currentBlock = this.getSourceBlock();
 
-          // Preventing escaping the current block/comment/etc by:
-          // Disallow moving from a node with a block to a non-block node (other than a block comment editor)
-          // Disallow moving from a non-block node to a block node
-          // Disallow moving to the workspace
           if (
             (currentBlock && !candidateBlock) ||
             (!currentBlock && candidateBlock) ||
@@ -373,10 +466,19 @@ export class LineCursor extends Marker {
 
           if (!candidateBlock || !currentBlock) return true;
 
+          const ifBlock = this.getControlsIfAncestor(currentBlock);
+          if (
+            ifBlock &&
+            !this.isOnSameControlsIfRow(ifBlock, curNode, candidate)
+          ) {
+            return false;
+          }
+
           const currentParents = this.getOutputParents(currentBlock);
           const candidateParents = this.getOutputParents(candidateBlock);
           return candidateParents.intersection(currentParents).size > 0;
         };
+
       case NavigationDirection.NEXT:
       case NavigationDirection.PREVIOUS:
         return (candidate: IFocusableNode | null) => {
@@ -404,6 +506,18 @@ export class LineCursor extends Marker {
               !currentNode.getParentInput() &&
               candidate !== currentNode.getSourceBlock()
             ) {
+              // Allow controls_if mutator buttons that are on a row with no
+              // boolean input (e.g. the add button), but suppress those that
+              // share a row with a boolean input (e.g. remove buttons).
+              if (
+                typeof (candidate as any)?.getSourceBlock === 'function' &&
+                (candidate as any).getSourceBlock()?.type === 'controls_if'
+              ) {
+                const ifBlock = (candidate as any).getSourceBlock() as BlockSvg;
+                const parentInput = (candidate as any).getParentInput?.();
+                const inputIndex = ifBlock.inputList.indexOf(parentInput);
+                return !this.controlsIfRowHasBooleanInput(ifBlock, inputIndex);
+              }
               return false;
             }
 
@@ -489,6 +603,22 @@ export class LineCursor extends Marker {
                 return !block.getInputsInline();
               });
             return result;
+          }
+
+          // Allow focusable field nodes (e.g. mutator buttons) that belong to
+          // the controls_if block currently being navigated, but only if they
+          // are on a row with no boolean input. This suppresses remove buttons
+          // (which share a row with a boolean input) in favour of the boolean
+          // input, while still allowing the add button (which is on its own row).
+          if (
+            currentBlock instanceof BlockSvg &&
+            currentBlock.type === 'controls_if' &&
+            typeof (candidate as any)?.getSourceBlock === 'function' &&
+            (candidate as any).getSourceBlock() === currentBlock
+          ) {
+            const parentInput = (candidate as any).getParentInput?.();
+            const inputIndex = currentBlock.inputList.indexOf(parentInput);
+            return !this.controlsIfRowHasBooleanInput(currentBlock, inputIndex);
           }
 
           return false;
