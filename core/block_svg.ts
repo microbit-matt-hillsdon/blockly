@@ -305,8 +305,14 @@ export class BlockSvg
       labelComponents.push(`${parentInput.getFieldRowLabel()}`);
     }
 
+    // For controls_if, only include the first row (up to the first
+    // NEXT_STATEMENT input) in the aria label, since the block as a whole
+    // represents the "if" row entry point.
+    const blockForSummary =
+      this.type === 'controls_if' ? createFirstRowProxy(this) : this;
+
     const {commaSeparatedSummary, inputCount} = buildBlockSummary(
-      this,
+      blockForSummary,
       verbose,
       currentBlock,
     );
@@ -327,6 +333,14 @@ export class BlockSvg
         labelComponents.push('has inputs');
       } else if (inputCount === 1) {
         labelComponents.push('has input');
+      }
+
+      if (this.type === 'controls_if') {
+        if (this.statementInputCount > 1) {
+          labelComponents.push(`has ${this.statementInputCount} branches`);
+        } else if (this.statementInputCount === 1) {
+          labelComponents.push('has 1 branch');
+        }
       }
     }
 
@@ -2112,6 +2126,9 @@ export class BlockSvg
           Boolean,
         );
         announcementContext.push(...announcementParts);
+        if (surroundParent?.statementInputCount > 1) {
+          announceBranch = true;
+        }
       } else {
         if (
           surroundParent?.statementInputCount &&
@@ -2416,4 +2433,27 @@ function buildBlockSummary(
     commaSeparatedSummary,
     inputCount,
   };
+}
+
+/**
+ * Creates a lightweight proxy of a BlockSvg that only exposes inputs from
+ * the first row (i.e. before the first NEXT_STATEMENT input). Used to
+ * restrict aria label computation for controls_if blocks.
+ */
+function createFirstRowProxy(block: BlockSvg): BlockSvg {
+  const firstStatementIndex = block.inputList.findIndex(
+    (input) => input.connection?.type === ConnectionType.NEXT_STATEMENT,
+  );
+  const firstRowInputs =
+    firstStatementIndex === -1
+      ? block.inputList
+      : block.inputList.slice(0, firstStatementIndex);
+
+  return new Proxy(block, {
+    get(target, prop) {
+      if (prop === 'inputList') return firstRowInputs;
+      const value = (target as any)[prop];
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
 }
