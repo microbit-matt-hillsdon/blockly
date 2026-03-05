@@ -482,6 +482,29 @@ export class LineCursor extends Marker {
       case NavigationDirection.NEXT:
       case NavigationDirection.PREVIOUS:
         return (candidate: IFocusableNode | null) => {
+          // DEBUG
+          const currentNodeDebug = this.getCurNode();
+          const currentBlockDebug =
+            this.getSourceBlockFromNode(currentNodeDebug);
+          if (
+            currentBlockDebug?.type === 'controls_if' ||
+            (currentNodeDebug instanceof BlockSvg &&
+              currentNodeDebug.outputConnection?.targetConnection?.getSourceBlock()
+                ?.type === 'controls_if') ||
+            (currentNodeDebug instanceof RenderedConnection &&
+              currentNodeDebug.getSourceBlock()?.type === 'controls_if')
+          ) {
+            console.log(
+              'NEXT/PREV currentNode:',
+              (currentNodeDebug as any)?.constructor?.name,
+              currentNodeDebug instanceof RenderedConnection
+                ? `type:${currentNodeDebug.type} parentInput:${currentNodeDebug.getParentInput()?.name}`
+                : '',
+              'currentBlock:',
+              currentBlockDebug?.type,
+            );
+          }
+
           if (
             (candidate instanceof BlockSvg &&
               !candidate.outputConnection?.targetBlock()) ||
@@ -611,14 +634,13 @@ export class LineCursor extends Marker {
           // (which share a row with a boolean input) in favour of the boolean
           // input, while still allowing the add button (which is on its own row).
           if (
-            currentBlock instanceof BlockSvg &&
-            currentBlock.type === 'controls_if' &&
             typeof (candidate as any)?.getSourceBlock === 'function' &&
-            (candidate as any).getSourceBlock() === currentBlock
+            (candidate as any).getSourceBlock()?.type === 'controls_if'
           ) {
+            const ifBlock = (candidate as any).getSourceBlock() as BlockSvg;
             const parentInput = (candidate as any).getParentInput?.();
-            const inputIndex = currentBlock.inputList.indexOf(parentInput);
-            return !this.controlsIfRowHasBooleanInput(currentBlock, inputIndex);
+            const inputIndex = ifBlock.inputList.indexOf(parentInput);
+            return !this.controlsIfRowHasBooleanInput(ifBlock, inputIndex);
           }
 
           return false;
