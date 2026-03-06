@@ -174,8 +174,6 @@ export class BlockSvg
 
   public currentConnectionCandidate: RenderedConnection | null = null;
 
-  public previousConnectionCandidate: RenderedConnection | null = null;
-
   /**
    * The location of the top left of this block (in workspace coordinates)
    * relative to either its parent block, or the workspace origin if it has no
@@ -1964,7 +1962,6 @@ export class BlockSvg
     this.dragStrategy.drag(newLoc, e);
     const dragStrategy = this.dragStrategy as BlockDragStrategy;
     const candidate = dragStrategy.connectionCandidate?.neighbour ?? null;
-    this.previousConnectionCandidate = this.currentConnectionCandidate;
     this.currentConnectionCandidate = candidate;
     this.announceDynamicAriaState(true, false, prevLocation, newLoc);
   }
@@ -1973,7 +1970,6 @@ export class BlockSvg
   endDrag(e?: PointerEvent): void {
     const location = this.getRelativeToSurfaceXY();
     this.dragStrategy.endDrag(e);
-    this.previousConnectionCandidate = null;
     this.currentConnectionCandidate = null;
     this.announceDynamicAriaState(false, false, location);
   }
@@ -2097,17 +2093,6 @@ export class BlockSvg
       if (!this.getParent()) {
         aria.announceDynamicAriaState('Block placed.');
       }
-      return;
-    }
-    if (
-      this.currentConnectionCandidate &&
-      this.previousConnectionCandidate &&
-      this.currentConnectionCandidate?.id ===
-        this.previousConnectionCandidate?.id
-    ) {
-      // The block has not moved anyway due to lack of available positions.
-      // Don't announce any change.
-      this.workspace.getAudioManager().beep(260);
       return;
     }
     if (this.currentConnectionCandidate) {
