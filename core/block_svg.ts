@@ -294,7 +294,8 @@ export class BlockSvg
           .getSourceBlock()
           .inputList.find((input) => input.type === inputTypes.STATEMENT)
     ) {
-      labelComponents.push(`Begin ${parentInput.getFieldRowLabel()}`);
+      // We just don't want this - we get enough context from the branch and the end of the branch.
+      // labelComponents.push(`${parentInput.getFieldRowLabel()}`);
     } else if (
       parentInput &&
       parentInput.type === inputTypes.VALUE &&
