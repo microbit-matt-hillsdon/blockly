@@ -482,29 +482,6 @@ export class LineCursor extends Marker {
       case NavigationDirection.NEXT:
       case NavigationDirection.PREVIOUS:
         return (candidate: IFocusableNode | null) => {
-          // DEBUG
-          const currentNodeDebug = this.getCurNode();
-          const currentBlockDebug =
-            this.getSourceBlockFromNode(currentNodeDebug);
-          if (
-            currentBlockDebug?.type === 'controls_if' ||
-            (currentNodeDebug instanceof BlockSvg &&
-              currentNodeDebug.outputConnection?.targetConnection?.getSourceBlock()
-                ?.type === 'controls_if') ||
-            (currentNodeDebug instanceof RenderedConnection &&
-              currentNodeDebug.getSourceBlock()?.type === 'controls_if')
-          ) {
-            console.log(
-              'NEXT/PREV currentNode:',
-              (currentNodeDebug as any)?.constructor?.name,
-              currentNodeDebug instanceof RenderedConnection
-                ? `type:${currentNodeDebug.type} parentInput:${currentNodeDebug.getParentInput()?.name}`
-                : '',
-              'currentBlock:',
-              currentBlockDebug?.type,
-            );
-          }
-
           if (
             (candidate instanceof BlockSvg &&
               !candidate.outputConnection?.targetBlock()) ||

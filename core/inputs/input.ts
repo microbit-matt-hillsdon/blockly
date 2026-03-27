@@ -328,28 +328,17 @@ export class Input {
         return `${label} ${field.getValue()}`;
       }, '')
       .trim();
-    const recursiveInputSummary = (
-      inputs: Input[],
-      skipInputIndex: number = -1,
-      skipFieldIndex: number = -1,
-    ): string => {
+    const recursiveInputSummary = (inputs: Input[]): string => {
       return inputs
-        .flatMap((input, inputIndex) => {
-          const fields = input.fieldRow
-            .filter(
-              (_, fieldIndex) =>
-                !(
-                  inputIndex === skipInputIndex && fieldIndex === skipFieldIndex
-                ),
-            )
-            .map((field) => {
-              if (!field.isVisible()) return undefined;
-              // Introduced to avoid reading out mutator buttons in MakeCode.
-              if (field instanceof FieldImage) return undefined;
-              // If the block is a full block field, we only want to know if it's an
-              // editable field if we're not directly on it.
-              return field.computeAriaLabel();
-            });
+        .flatMap((input) => {
+          const fields = input.fieldRow.map((field) => {
+            if (!field.isVisible()) return undefined;
+            // Introduced to avoid reading out mutator buttons in MakeCode.
+            if (field instanceof FieldImage) return undefined;
+            // If the block is a full block field, we only want to know if it's an
+            // editable field if we're not directly on it.
+            return field.computeAriaLabel();
+          });
           if (
             input.isVisible() &&
             input.connection &&
@@ -384,31 +373,37 @@ export class Input {
 
       if (this.getSourceBlock().type === 'controls_if') {
         // For controls_if, find the first visible non-image field (e.g. "if",
-        // "else if", "else") and insert "branch" after it, then append the
-        // remaining full summary.
+        // "else if", "else") and insert "branch" after it.
         let firstLabel = '';
-        let firstLabelFieldIndex = -1;
-        let firstLabelInputIndex = -1;
-        for (let i = 0; i < inputsInRange.length; i++) {
-          for (let j = 0; j < inputsInRange[i].fieldRow.length; j++) {
-            const field = inputsInRange[i].fieldRow[j];
+        for (const input of inputsInRange) {
+          for (const field of input.fieldRow) {
             if (field.isVisible() && !(field instanceof FieldImage)) {
               firstLabel = field.computeAriaLabel();
-              firstLabelInputIndex = i;
-              firstLabelFieldIndex = j;
               break;
             }
           }
           if (firstLabel) break;
         }
-        const fullSummary = recursiveInputSummary(
-          inputsInRange,
-          firstLabelInputIndex,
-          firstLabelFieldIndex,
-        );
+
+        // For else if branches, append "i of j" to differentiate between them.
+        const sourceBlock = this.getSourceBlock();
+        const totalElseIf = sourceBlock.inputList.filter(
+          (input) => input.name?.startsWith('DO') && input.name !== 'DO0',
+        ).length;
+        const thisInputName = this.name;
+        let positionSuffix = '';
+        if (
+          thisInputName?.startsWith('DO') &&
+          thisInputName !== 'DO0' &&
+          totalElseIf > 1
+        ) {
+          const i = parseInt(thisInputName.replace('DO', ''), 10);
+          positionSuffix = `, ${i} of ${totalElseIf}`;
+        }
+
         return firstLabel
-          ? `${firstLabel} branch, ${fullSummary}`
-          : `${fullSummary} branch`;
+          ? `${firstLabel} branch${positionSuffix}`
+          : `branch${positionSuffix}`;
       }
 
       return recursiveInputSummary(inputsInRange);
