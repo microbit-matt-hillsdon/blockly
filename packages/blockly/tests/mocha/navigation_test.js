@@ -774,6 +774,43 @@ suite('Navigation', function () {
         const inNode = this.navigator.getFirstChild(this.blocks.buttonBlock);
         assert.isNull(inNode);
       });
+      test('reachesClickableFieldOnCollapsedInput', function () {
+        // Models a pattern where a clickable field is appended to
+        // COLLAPSED_INPUT_NAME when the block collapses.
+        const block = this.blocks.buttonBlock;
+        block.setCollapsed(true);
+        const input = block.getInput(Blockly.constants.COLLAPSED_INPUT_NAME);
+        const expandButton = new Blockly.FieldImage(
+          'https://www.gstatic.com/codesite/ph/images/star_on.gif',
+          16,
+          16,
+          'expand',
+          () => {},
+        );
+        input.appendField(expandButton);
+
+        const inNode = this.navigator.getInNode(block);
+        assert.equal(inNode, expandButton);
+      });
+      test('skipsIconsHiddenWhenCollapsed', function () {
+        // Comment icons are hidden when the block is collapsed, so they
+        // should not be navigable.
+        const block = this.blocks.statementInput1;
+        block.setCommentText('comment');
+        block.setCollapsed(true);
+        assert.isNull(this.navigator.getInNode(block));
+      });
+      test('reachesIconsShownWhenCollapsed', function () {
+        // Warning icons remain shown when the block is collapsed, so they
+        // should still be navigable.
+        const block = this.blocks.statementInput1;
+        block.setWarningText('warning');
+        block.setCollapsed(true);
+        assert.equal(
+          this.navigator.getInNode(block),
+          block.getIcon(Blockly.icons.IconType.WARNING),
+        );
+      });
     });
 
     suite('Out', function () {

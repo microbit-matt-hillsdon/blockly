@@ -119,13 +119,12 @@ export class BlockNavigationPolicy implements INavigationPolicy<BlockSvg> {
  * @returns A list of navigable/focusable children of the given block.
  */
 function getBlockNavigationCandidates(block: BlockSvg): IFocusableNode[] {
-  // Collapsed blocks have no navigable children.
-  if (block.isCollapsed()) return [];
-
   const candidates: IFocusableNode[] = [];
 
   // Icons and open bubbles are navigable.
   for (const icon of block.getIcons()) {
+    // Icons hidden when the block is collapsed shouldn't be navigable.
+    if (block.isCollapsed() && !icon.isShownWhenCollapsed()) continue;
     candidates.push(icon);
     let bubble;
     if (
@@ -162,7 +161,7 @@ function getBlockNavigationCandidates(block: BlockSvg): IFocusableNode[] {
   }
 
   // The block's next connection is navigable.
-  if (block.nextConnection) {
+  if (block.nextConnection && !block.isCollapsed()) {
     candidates.push(block.nextConnection);
   }
 

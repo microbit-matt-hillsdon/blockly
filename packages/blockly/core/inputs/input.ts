@@ -375,7 +375,13 @@ export class Input {
   getRowId(): string {
     const inputs = this.getSourceBlock().inputList;
 
-    // The first input in a block has the same ID as its parent block.
+    // The first visible input shares the block's row id; this also covers
+    // the collapsed-input placeholder, since every other input is hidden.
+    if (this === inputs.find((i) => i.isVisible())) {
+      return (this.getSourceBlock() as BlockSvg).getRowId();
+    }
+
+    // Fallback when inputs[0] itself is hidden.
     if (this === inputs[0]) {
       return (this.getSourceBlock() as BlockSvg).getRowId();
     }
