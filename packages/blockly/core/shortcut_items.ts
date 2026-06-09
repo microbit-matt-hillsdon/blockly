@@ -940,10 +940,12 @@ export function registerDisconnectBlock() {
   const disconnectShortcut: ShortcutRegistry.KeyboardShortcut = {
     name: names.DISCONNECT,
     preconditionFn: (workspace, scope) => {
+      const focused = scope.focusedNode;
       const result =
         !workspace.isDragging() &&
         !workspace.isReadOnly() &&
-        scope.focusedNode instanceof BlockSvg;
+        focused instanceof BlockSvg &&
+        !focused.isShadow();
 
       if (!result) {
         workspace.getAudioManager().playErrorBeep();

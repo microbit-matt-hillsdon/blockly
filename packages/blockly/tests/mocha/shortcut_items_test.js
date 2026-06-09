@@ -1036,6 +1036,23 @@ suite('Keyboard Shortcut Items', function () {
       assert.deepEqual(bounds, this.blockE.getBoundingRectangle());
     });
 
+    test('Does nothing for a shadow block', function () {
+      this.blockH.setShadow(true);
+      Blockly.getFocusManager().focusNode(this.blockH);
+      assert.isTrue(this.blockH.outputConnection.isConnected());
+
+      this.injectionDiv.dispatchEvent(
+        createKeyDownEvent(Blockly.utils.KeyCodes.X),
+      );
+
+      // The shadow should remain connected to its parent input.
+      assert.isTrue(this.blockH.outputConnection.isConnected());
+      assert.strictEqual(
+        Blockly.getFocusManager().getFocusedNode(),
+        this.blockH,
+      );
+    });
+
     test('Disconnects child blocks when triggered on top stack block', function () {
       Blockly.getFocusManager().focusNode(this.blockB);
       assert.isTrue(this.blockB.nextConnection.isConnected());
