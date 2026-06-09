@@ -230,7 +230,7 @@ export function registerCopy() {
           ? focused.getRelativeToSurfaceXY()
           : undefined;
       const copied = !!clipboard.copy(focused, copyCoords);
-      if (copied) {
+      if (copied && e instanceof KeyboardEvent) {
         showCopiedHint(workspace);
       }
       return copied;
@@ -284,7 +284,7 @@ export function registerCut() {
         workspace.getAudioManager().play('delete');
         e.preventDefault();
       }
-      if (copyData) {
+      if (copyData && e instanceof KeyboardEvent) {
         showCutHint(workspace);
       }
       return !!copyData;
