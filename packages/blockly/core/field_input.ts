@@ -851,7 +851,7 @@ export abstract class FieldInput<T extends InputTypes> extends Field<
     if (!shouldCustomize) return false;
     const focusableElement = this.getFocusableElement();
 
-    let label = this.computeAriaLabel(true);
+    let label = this.computeFocusAriaLabel();
     if (this.isCurrentlyEditable() && !this.getSourceBlock()?.isInFlyout) {
       label = Msg['FIELD_LABEL_EDIT_PREFIX'].replace('%1', label);
     }

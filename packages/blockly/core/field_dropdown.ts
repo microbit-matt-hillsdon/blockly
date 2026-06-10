@@ -940,9 +940,9 @@ export class FieldDropdown extends Field<string> {
     if (!shouldCustomize) return false;
 
     const focusableElement = this.getFocusableElement();
-    const label = this.computeAriaLabel(true);
 
-    aria.setState(focusableElement, aria.State.LABEL, label);
+    // The label is set by super.recomputeAriaContext (which handles the
+    // full-block-field case); here we only add the dropdown role/state.
     aria.setState(focusableElement, aria.State.HASPOPUP, 'listbox');
     aria.setState(focusableElement, aria.State.EXPANDED, !!this.menu_);
     return true;

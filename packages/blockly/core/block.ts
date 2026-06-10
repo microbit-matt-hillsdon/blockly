@@ -977,8 +977,15 @@ export class Block {
    */
   getFullBlockField(): Field<any> | null {
     if (!this.isSimpleReporter()) return null;
-    const field = this.inputList[0]?.fieldRow[0];
-    return field?.isFullBlockField() ? field : null;
+    // Scan past leading non-full-block fields (such as labels) so a reporter
+    // whose dropdown follows a label, e.g. "melody $melody", is still
+    // recognised, just like "$fraction beat" where the dropdown comes first.
+    for (const input of this.inputList) {
+      for (const field of input.fieldRow) {
+        if (field.isFullBlockField()) return field;
+      }
+    }
+    return null;
   }
 
   /**

@@ -389,6 +389,22 @@ export abstract class Field<T = any>
   }
 
   /**
+   * Computes the ARIA label for this field's focusable element.
+   *
+   * When this field stands in for the whole block (a full-block field), its
+   * element is the block's focus target, so the label describes the whole block
+   * (including sibling labels) rather than just this field's value. Otherwise it
+   * is this field's own label.
+   */
+  protected computeFocusAriaLabel(): string {
+    const block = this.getSourceBlock() as BlockSvg | null;
+    if (block?.getFullBlockField() === this) {
+      return block.getAriaLabel(aria.Verbosity.STANDARD);
+    }
+    return this.computeAriaLabel(true);
+  }
+
+  /**
    * Initialize everything to render this field. Override
    * methods initModel and initView rather than this method.
    *
@@ -1560,8 +1576,7 @@ export abstract class Field<T = any>
     // editing mode that can be activated.
     aria.setRole(focusableElement, aria.Role.BUTTON);
 
-    const label = this.computeAriaLabel(true);
-    aria.setState(focusableElement, aria.State.LABEL, label);
+    aria.setState(focusableElement, aria.State.LABEL, this.computeFocusAriaLabel());
     return true;
   }
 

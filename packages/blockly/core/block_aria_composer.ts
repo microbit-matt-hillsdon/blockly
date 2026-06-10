@@ -63,12 +63,19 @@ export function computeAriaLabel(
   block: BlockSvg,
   verbosity = Verbosity.STANDARD,
 ) {
-  if (block.isSimpleReporter()) {
-    // special case for full-block field blocks.
-    const field = block.getFullBlockField();
-    if (field) {
-      return field.computeAriaLabel(verbosity >= Verbosity.STANDARD);
-    }
+  if (block.isSimpleReporter() && block.getFullBlockField()) {
+    // Full-block field block: announce the whole field row (static labels plus
+    // the field's value/type), not just the full-block field itself, so
+    // contextual labels like "melody" or "beat" aren't dropped. The dropdown
+    // role/state are set separately on the field element by its own
+    // recomputeAriaContext.
+    const includeTypeInfo = verbosity >= Verbosity.STANDARD;
+    return block.inputList
+      .flatMap((input) => input.fieldRow)
+      .filter((field) => field.isVisible())
+      .map((field) => field.computeAriaLabel(includeTypeInfo))
+      .filter((label) => !!label)
+      .join(', ');
   }
   return [
     verbosity >= Verbosity.STANDARD && getBeginStackLabel(block),
