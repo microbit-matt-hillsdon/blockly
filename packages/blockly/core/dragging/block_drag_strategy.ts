@@ -86,6 +86,19 @@ export class BlockDragStrategy implements IDragStrategy {
   /** List of all connections available on the workspace. */
   private allConnectionPairs: ConnectionPair[] = [];
 
+  /**
+   * The current position within `allConnectionPairs` during a constrained
+   * (keyboard) move, or null if no position has been established yet.
+   *
+   * The first constrained move uses relative positioning to choose an entry
+   * point and set this index; every subsequent move steps through the ordered
+   * connection list from here. The values `-1` and `allConnectionPairs.length`
+   * represent the block being disconnected just before the start or just after
+   * the end of the list, so that reversing direction returns to the boundary
+   * connection in order rather than re-deriving a position from distance.
+   */
+  private constrainedTraversalIndex: number | null = null;
+
   /** The current movement mode. */
   private moveMode = MoveMode.UNCONSTRAINED;
 
@@ -323,6 +336,7 @@ export class BlockDragStrategy implements IDragStrategy {
     this.startLoc = this.block.getRelativeToSurfaceXY();
 
     this.connectionCandidate = null;
+    this.constrainedTraversalIndex = null;
     const previewerConstructor = registry.getClassFromOptions(
       registry.Type.CONNECTION_PREVIEWER,
       this.workspace.options,
@@ -918,6 +932,7 @@ export class BlockDragStrategy implements IDragStrategy {
     }
 
     this.allConnectionPairs = [];
+    this.constrainedTraversalIndex = null;
   }
 
   /** Disposes of any state at the end of the drag. */
@@ -1019,22 +1034,69 @@ export class BlockDragStrategy implements IDragStrategy {
     }
     const forwardTraversal =
       direction === Direction.RIGHT || direction === Direction.DOWN;
+    const navigator = this.block.workspace.getNavigator();
+    const looping = navigator.getNavigationLoops();
+
     const currentPairIndex = pairs.findIndex(
       (pair) =>
         this.connectionCandidate?.local === pair.local &&
         this.connectionCandidate?.neighbour === pair.neighbour,
     );
 
-    const navigator = this.block.workspace.getNavigator();
+    // In screen reader / non-looping mode, establish an entry point using
+    // relative positioning on the first move only; every subsequent move steps
+    // through the connections in order so up and down moves are symmetrical.
+    if (!looping) {
+      // Keep the traversal index in sync with the current candidate. This
+      // captures the starting connection of a block that began the move already
+      // connected (or whose initial candidate was chosen from passive focus).
+      if (currentPairIndex !== -1) {
+        this.constrainedTraversalIndex = currentPairIndex;
+      }
+
+      // First move with no established position: choose an entry point using
+      // relative (closest) positioning.
+      if (this.constrainedTraversalIndex === null) {
+        const terminal = this.isInTerminalPosition(
+          this.block,
+          forwardTraversal ? Direction.DOWN : Direction.UP,
+        );
+        if (terminal) return null;
+        const candidate = this.getClosestCandidate(this.block, delta);
+        if (candidate) {
+          const index = pairs.findIndex(
+            (pair) =>
+              pair.local === candidate.local &&
+              pair.neighbour === candidate.neighbour,
+          );
+          if (index !== -1) this.constrainedTraversalIndex = index;
+        }
+        return candidate;
+      }
+
+      // Subsequent moves: step through the connections in order. The indices
+      // `-1` and `pairs.length` represent the block being disconnected just
+      // before the start or just after the end of the list, so reversing
+      // direction returns to the boundary connection in order.
+      const next = Math.max(
+        -1,
+        Math.min(
+          pairs.length,
+          this.constrainedTraversalIndex + (forwardTraversal ? 1 : -1),
+        ),
+      );
+      this.constrainedTraversalIndex = next;
+      if (next < 0 || next >= pairs.length) return null;
+      return this.pairToCandidate(pairs[next]);
+    }
+
+    // Looping mode (original behaviour): re-derive the position from the current
+    // candidate each move, falling back to relative positioning when the block
+    // is not currently at a known connection.
     if (forwardTraversal) {
       if (currentPairIndex === -1) {
-        const terminal = this.isInTerminalPosition(this.block, Direction.DOWN);
-        if (terminal) {
-          if (navigator.getNavigationLoops()) {
-            return this.pairToCandidate(pairs[0]);
-          } else {
-            return null;
-          }
+        if (this.isInTerminalPosition(this.block, Direction.DOWN)) {
+          return this.pairToCandidate(pairs[0]);
         }
         return this.getClosestCandidate(this.block, delta);
       } else if (currentPairIndex === pairs.length - 1) {
@@ -1044,13 +1106,8 @@ export class BlockDragStrategy implements IDragStrategy {
       }
     } else {
       if (currentPairIndex === -1) {
-        const terminal = this.isInTerminalPosition(this.block, Direction.UP);
-        if (terminal) {
-          if (navigator.getNavigationLoops()) {
-            return this.pairToCandidate(pairs[pairs.length - 1]);
-          } else {
-            return null;
-          }
+        if (this.isInTerminalPosition(this.block, Direction.UP)) {
+          return this.pairToCandidate(pairs[pairs.length - 1]);
         }
         return this.getClosestCandidate(this.block, delta);
       } else if (currentPairIndex === 0) {
