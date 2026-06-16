@@ -745,17 +745,6 @@ export class WorkspaceSvg
    * Updates the label on the workspace to reflect the number of top-level stacks in the workspace.
    */
   private updateAriaLabel() {
-    if (userAgent.APPLE) {
-      // VoiceOver is reading this label inappropriately, so don't show the
-      // stack count because it might be inaccurate.
-      // https://github.com/RaspberryPiFoundation/blockly/issues/9885
-      aria.setState(
-        this.svgGroup_,
-        aria.State.LABEL,
-        Msg['WORKSPACE_LABEL_PLAIN'],
-      );
-      return;
-    }
     const numStacks = this.getTopBlocks(false).length;
     if (numStacks == 1) {
       aria.setState(
@@ -2975,7 +2964,14 @@ export class WorkspaceSvg
   onTreeFocus(
     _node: IFocusableNode,
     _previousTree: IFocusableTree | null,
-  ): void {}
+  ): void {
+    // Screen readers read this label as the enclosing region when workspace
+    // contents are focused, so refresh it here to keep the stack count from
+    // going stale.
+    if (!this.isFlyout && !this.isMutator) {
+      this.updateAriaLabel();
+    }
+  }
 
   /** See IFocusableTree.onTreeBlur. */
   onTreeBlur(nextTree: IFocusableTree | null): void {
