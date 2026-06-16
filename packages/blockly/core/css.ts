@@ -655,6 +655,12 @@ input[type=number] {
   stroke-width: var(--blockly-selection-width);
 }
 
+/* The selection ring receives focus as the workspace focus proxy; its stroke
+   (above) is the focus indicator, so suppress the redundant UA outline. */
+.blocklyWorkspaceSelectionRing:focus {
+  outline: none;
+}
+
 /* The workspace itself is the active node. */
 .blocklyKeyboardNavigation
   .blocklyBubble.blocklyActiveFocus

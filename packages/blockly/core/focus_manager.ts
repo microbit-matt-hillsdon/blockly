@@ -359,7 +359,12 @@ export class FocusManager {
     // since other cases should automatically correct (due to the rest of the
     // routine running as normal).
     const prevFocusedElement = this.focusedNode?.getFocusableElement();
-    const hasDesyncedState = prevFocusedElement !== document.activeElement;
+    // Compare against the resolved focus target so a node using a focus proxy
+    // isn't seen as permanently desynced from document.activeElement.
+    const prevFocusTarget = prevFocusedElement
+      ? this.resolveFocusElement(prevFocusedElement)
+      : prevFocusedElement;
+    const hasDesyncedState = prevFocusTarget !== document.activeElement;
     if (this.focusedNode === focusableNode && !hasDesyncedState) {
       if (mustRestoreUpdatingNode) {
         // Reenable state syncing from DOM events.
@@ -608,7 +613,29 @@ export class FocusManager {
     }
 
     this.setNodeToVisualActiveFocus(node);
-    elem.focus({preventScroll: true});
+    this.resolveFocusElement(elem).focus({preventScroll: true});
+  }
+
+  /**
+   * Resolves the element that should receive `.focus()` for the given node
+   * element, honouring a `data-focus-proxy` attribute that delegates DOM focus
+   * to the element with the given id.
+   *
+   * This lets a node keep an ancestor element for traversal/styling/ARIA while
+   * focusing a sibling instead: VoiceOver won't re-announce when focus is set
+   * to an ancestor of where its cursor sits, but a sibling is announced.
+   */
+  private resolveFocusElement(
+    elem: HTMLElement | SVGElement,
+  ): HTMLElement | SVGElement {
+    const proxyId = elem.getAttribute('data-focus-proxy');
+    if (!proxyId) return elem;
+    const root = elem.getRootNode() as Document | ShadowRoot;
+    const proxy: Element | null = root.getElementById(proxyId);
+    if (proxy instanceof HTMLElement || proxy instanceof SVGElement) {
+      return proxy;
+    }
+    return elem;
   }
 
   /**

@@ -728,16 +728,37 @@ export class WorkspaceSvg
       return;
     }
     aria.setRole(this.svgGroup_, aria.Role.REGION);
+    if (this.usesFocusProxy() && this.workspaceSelectionRing) {
+      // The proxy receives focus, so it needs a role and label of its own.
+      // Not a region: the landmark stays on svgGroup_ to avoid nesting one.
+      aria.setRole(this.workspaceSelectionRing, aria.Role.GROUP);
+    }
     if (this.isMutator) {
-      aria.setState(
-        this.svgGroup_,
-        aria.State.LABEL,
-        Msg['WORKSPACE_LABEL_MUTATOR_WORKSPACE'],
-      );
+      this.setWorkspaceAriaLabel(Msg['WORKSPACE_LABEL_MUTATOR_WORKSPACE']);
     } else {
       // Main workspaces get labelled with how many stacks of blocks they contain
       // This will be updated on focus, but set it here in case there are blocks in the initial state of the workspace
       this.updateAriaLabel();
+    }
+  }
+
+  /**
+   * Whether this workspace routes DOM focus to a sibling proxy instead of
+   * svgGroup_. Only on Apple, where VoiceOver does not re-announce when focus
+   * moves to an ancestor of where its cursor sits.
+   */
+  private usesFocusProxy(): boolean {
+    return userAgent.APPLE && !this.isFlyout;
+  }
+
+  /**
+   * Sets the workspace label on svgGroup_, and on the focus proxy when in use
+   * so it is announced when focus lands there.
+   */
+  private setWorkspaceAriaLabel(label: string) {
+    aria.setState(this.svgGroup_, aria.State.LABEL, label);
+    if (this.usesFocusProxy() && this.workspaceSelectionRing) {
+      aria.setState(this.workspaceSelectionRing, aria.State.LABEL, label);
     }
   }
 
@@ -749,24 +770,14 @@ export class WorkspaceSvg
       // VoiceOver is reading this label inappropriately, so don't show the
       // stack count because it might be inaccurate.
       // https://github.com/RaspberryPiFoundation/blockly/issues/9885
-      aria.setState(
-        this.svgGroup_,
-        aria.State.LABEL,
-        Msg['WORKSPACE_LABEL_PLAIN'],
-      );
+      this.setWorkspaceAriaLabel(Msg['WORKSPACE_LABEL_PLAIN']);
       return;
     }
     const numStacks = this.getTopBlocks(false).length;
     if (numStacks == 1) {
-      aria.setState(
-        this.svgGroup_,
-        aria.State.LABEL,
-        Msg['WORKSPACE_LABEL_1_STACK'],
-      );
+      this.setWorkspaceAriaLabel(Msg['WORKSPACE_LABEL_1_STACK']);
     } else {
-      aria.setState(
-        this.svgGroup_,
-        aria.State.LABEL,
+      this.setWorkspaceAriaLabel(
         Msg['WORKSPACE_LABEL_MANY_STACKS'].replace('%1', String(numStacks)),
       );
     }
@@ -826,6 +837,21 @@ export class WorkspaceSvg
       },
       this.svgGroup_,
     );
+    if (this.usesFocusProxy()) {
+      // Route the workspace's DOM focus to the selection ring (a sibling of the
+      // block canvas) rather than svgGroup_ (an ancestor of every block), so
+      // VoiceOver announces the focus move. tabindex=-1 keeps it focusable
+      // without adding a tab stop.
+      this.workspaceSelectionRing.setAttribute(
+        'id',
+        this.id + '_workspaceFocusProxy',
+      );
+      this.workspaceSelectionRing.setAttribute('tabindex', '-1');
+      this.svgGroup_.setAttribute(
+        'data-focus-proxy',
+        this.workspaceSelectionRing.id,
+      );
+    }
     this.workspaceFocusRing = dom.createSvgElement(
       Svg.RECT,
       {
