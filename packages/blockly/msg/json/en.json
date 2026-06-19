@@ -1,7 +1,7 @@
 {
 	"@metadata": {
 		"author": "Ellen Spertus <ellen.spertus@gmail.com>",
-		"lastupdated": "2026-06-12 09:20:03.058537",
+		"lastupdated": "2026-06-19 12:15:19.173460",
 		"locale": "en",
 		"messagedocumentation" : "qqq"
 	},
@@ -493,8 +493,9 @@
 	"KEYBOARD_NAV_COPIED_HINT": "Copied. Press %1 to paste.",
 	"KEYBOARD_NAV_CUT_HINT": "Cut. Press %1 to paste.",
 	"WORKSPACE_LABEL_PLAIN": "Blocks workspace.",
-	"WORKSPACE_LABEL_1_STACK": "Blocks workspace. 1 stack of blocks",
-	"WORKSPACE_LABEL_MANY_STACKS": "Blocks workspace. %1 stacks of blocks",
+	"WORKSPACE_ROLEDESCRIPTION": "workspace",
+	"WORKSPACE_LABEL_1_STACK": "1 stack of blocks",
+	"WORKSPACE_LABEL_MANY_STACKS": "%1 stacks of blocks",
 	"WORKSPACE_LABEL_MUTATOR_WORKSPACE": "Block editor workspace",
 	"WORKSPACE_LABEL_FLYOUT_WORKSPACE": "%1 blocks",
 	"WORKSPACE_CONTENTS_BLOCKS_MANY": "%1 stacks of blocks%2 in workspace.",

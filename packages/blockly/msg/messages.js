@@ -1915,13 +1915,16 @@ Blockly.Msg.KEYBOARD_NAV_CUT_HINT = 'Cut. Press %1 to paste.';
 /// Aria label for a workspace. Avoid using the name "Blockly" as this could appear in branded products.
 Blockly.Msg.WORKSPACE_LABEL_PLAIN = 'Blocks workspace.';
 /** @type {string} */
-/// Aria label for a workspace with one stack of blocks.
-Blockly.Msg.WORKSPACE_LABEL_1_STACK = 'Blocks workspace. 1 stack of blocks';
+/// Aria role description for the workspace, announced alongside the stack count when the workspace itself is focused.
+Blockly.Msg.WORKSPACE_ROLEDESCRIPTION = 'workspace';
 /** @type {string} */
-/// Aria label for a workspace with 0 or >1 stacks of blocks.
+/// Aria label announcing that the workspace contains one stack of blocks. Announced after the "Blocks workspace." region label when the workspace itself is focused, so it should not repeat that text.
+Blockly.Msg.WORKSPACE_LABEL_1_STACK = '1 stack of blocks';
+/** @type {string} */
+/// Aria label announcing how many stacks of blocks the workspace contains, for 0 or >1 stacks. Announced after the "Blocks workspace." region label when the workspace itself is focused, so it should not repeat that text.
 /// \n\nParameters:\n* %1 - the number of stacks of blocks. A stack of blocks is a group of connected
 /// blocks that are not connected to any other blocks. 0 stacks means there are no blocks on the workspace.
-Blockly.Msg.WORKSPACE_LABEL_MANY_STACKS = 'Blocks workspace. %1 stacks of blocks';
+Blockly.Msg.WORKSPACE_LABEL_MANY_STACKS = '%1 stacks of blocks';
 /** @type {string} */
 /// Aria label for a mutator workspace, which is a secondary workspace used for editing a block's structure.
 /// This type of workspace appears when a user clicks on the gear icon of a block that has a mutator, and

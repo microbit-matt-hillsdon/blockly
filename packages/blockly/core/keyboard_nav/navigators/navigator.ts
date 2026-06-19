@@ -20,6 +20,7 @@ import {ConnectionNavigationPolicy} from '../navigation_policies/connection_navi
 import {FieldNavigationPolicy} from '../navigation_policies/field_navigation_policy.js';
 import {IconNavigationPolicy} from '../navigation_policies/icon_navigation_policy.js';
 import {WorkspaceCommentNavigationPolicy} from '../navigation_policies/workspace_comment_navigation_policy.js';
+import {WorkspaceFocusTargetNavigationPolicy} from '../navigation_policies/workspace_focus_target_navigation_policy.js';
 import {WorkspaceNavigationPolicy} from '../navigation_policies/workspace_navigation_policy.js';
 
 type RuleList<T> = INavigationPolicy<T>[];
@@ -48,6 +49,7 @@ export class Navigator {
     new FieldNavigationPolicy(),
     new ConnectionNavigationPolicy(),
     new WorkspaceNavigationPolicy(),
+    new WorkspaceFocusTargetNavigationPolicy(),
     new IconNavigationPolicy(),
     new WorkspaceCommentNavigationPolicy(),
     new CommentBarButtonNavigationPolicy(),
