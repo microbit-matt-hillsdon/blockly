@@ -571,6 +571,12 @@ input[type=number] {
 
 /* Passive focus cases: */
 /* Blocks with passive focus except when widget/dropdown div in use. */
+.blocklyKeyboardNavigation:not(
+        :has(
+            .blocklyDropDownDiv:focus-within,
+            .blocklyWidgetDiv:focus-within
+          )
+      )
   .blocklyPassiveFocus:is(
     .blocklyPath:not(.blocklyFlyout .blocklyPath),
     .blocklyHighlightedConnectionPath
