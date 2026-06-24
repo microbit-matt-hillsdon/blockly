@@ -80,7 +80,21 @@ export class BlockFlyoutInflater implements IFlyoutInflater {
     // to correct the role and hidden state for it.
     const focusableElement = block.getFocusableElement();
     aria.clearState(focusableElement, aria.State.HIDDEN);
-    aria.setRole(focusableElement, aria.Role.LISTITEM);
+    aria.setRole(focusableElement, aria.Role.OPTION);
+
+    // Clickable icons in the flyout are owned by their parent block.
+    // This ensures that clickable icons are not included in the option
+    // count when screen readers assess the number of options in the
+    // flyout listbox.
+    const ownedIconIds = block
+      .getIcons()
+      .filter((icon) => icon.isClickableInFlyout?.(flyout.autoClose))
+      .map((icon) => icon.getFocusableElement().id)
+      .filter((id) => !!id);
+    if (ownedIconIds.length) {
+      aria.setState(focusableElement, aria.State.OWNS, ownedIconIds);
+    }
+
     this.addBlockListeners(block);
 
     return new FlyoutItem(block, BLOCK_TYPE);

@@ -177,10 +177,10 @@ export class FlyoutButton
     aria.setRole(svgText, aria.Role.PRESENTATION);
 
     // We add the word "heading" or "button" to the label so that they give appropriate hints
-    // we can't use the corresponding roles because that overwrites the context of it being a list item.
+    // we can't use the corresponding roles because that overwrites the context of it being an option.
     const ariaLabel = `${text}, ${this.isFlyoutLabel ? Msg['ARIA_LABEL_HEADING'] : Msg['ARIA_LABEL_BUTTON']}`;
     aria.setState(this.getFocusableElement(), aria.State.LABEL, ariaLabel);
-    aria.setRole(this.getFocusableElement(), aria.Role.LISTITEM);
+    aria.setRole(this.getFocusableElement(), aria.Role.OPTION);
 
     const fontSize = style.getComputedStyle(svgText, 'fontSize');
     const fontWeight = style.getComputedStyle(svgText, 'fontWeight');
