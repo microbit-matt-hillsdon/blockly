@@ -28,6 +28,7 @@ import * as internalConstants from './internal_constants.js';
 import {Msg} from './msg.js';
 import * as aria from './utils/aria.js';
 import {Coordinate} from './utils/coordinate.js';
+import * as dom from './utils/dom.js';
 import * as svgMath from './utils/svg_math.js';
 import {WorkspaceSvg} from './workspace_svg.js';
 
@@ -394,8 +395,14 @@ export class RenderedConnection
     // draw pass).
     const highlightSvg = this.findHighlightSvg();
     if (highlightSvg) {
-      highlightSvg.style.display = '';
-      highlightSvg.parentElement?.appendChild(highlightSvg);
+      dom.addClass(highlightSvg, 'blocklyHighlightedConnectionPathVisible');
+      requestAnimationFrame(() => {
+        const parent = highlightSvg.parentElement;
+        if (!parent) return;
+        while (highlightSvg.nextSibling) {
+          parent.insertBefore(highlightSvg.nextSibling, highlightSvg);
+        }
+      });
       this.recomputeAriaContext(highlightSvg);
     }
   }
@@ -407,7 +414,7 @@ export class RenderedConnection
     // Note that this is done synchronously for parity with highlight().
     const highlightSvg = this.findHighlightSvg();
     if (highlightSvg) {
-      highlightSvg.style.display = 'none';
+      dom.removeClass(highlightSvg, 'blocklyHighlightedConnectionPathVisible');
     }
   }
 
