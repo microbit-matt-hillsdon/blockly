@@ -322,11 +322,11 @@ export class RenderedConnection
   }
 
   /**
-   * Sets the aria role, label, and other state for this connection.
+   * Sets the aria role and role description for this connection.
    *
    * @param highlightSvg The focusable element for this connection.
    */
-  recomputeAriaContext(highlightSvg: SVGElement) {
+  setAriaRole(highlightSvg: SVGElement) {
     // Note that output connections don't have highlights so this doesn't need to take them into account.
     const roleDescription =
       this.type === ConnectionType.INPUT_VALUE
@@ -335,6 +335,15 @@ export class RenderedConnection
 
     aria.setRole(highlightSvg, aria.Role.FIGURE);
     aria.setState(highlightSvg, aria.State.ROLEDESCRIPTION, roleDescription);
+  }
+
+  /**
+   * Sets the aria role, label, and other state for this connection.
+   *
+   * @param highlightSvg The focusable element for this connection.
+   */
+  private recomputeAriaContext(highlightSvg: SVGElement) {
+    this.setAriaRole(highlightSvg);
 
     // 'Next' connections are only focusable if they're the last connection
     // inside a statement input. The label for these connections comes from
