@@ -1397,6 +1397,7 @@ export class BlockSvg
       return;
     }
     requestAnimationFrame(() => {
+      if (this.dragging) return;
       /* eslint-disable-next-line @typescript-eslint/no-this-alias */
       let block: this | null = this;
       do {
