@@ -1393,25 +1393,28 @@ export class BlockSvg
    * @internal
    */
   moveSvgRootToFront(blockOnly = false) {
-    /* eslint-disable-next-line @typescript-eslint/no-this-alias */
-    let block: this | null = this;
-    if (block.isDeadOrDying()) {
+    if (this.isDeadOrDying()) {
       return;
     }
-    do {
-      const root = block.getSvgRoot();
-      const parent = root.parentNode;
-      if (!parent) return;
-      const childNodes = parent.childNodes;
-      // Avoid moving the block if it's already at the bottom.
-      if (childNodes[childNodes.length - 1] !== root) {
-        while (root.nextSibling) {
-          parent.insertBefore(root.nextSibling, root);
+    requestAnimationFrame(() => {
+      /* eslint-disable-next-line @typescript-eslint/no-this-alias */
+      let block: this | null = this;
+      do {
+        if (block.isDeadOrDying()) return;
+        const root = block.getSvgRoot();
+        const parent = root.parentNode;
+        if (!parent) return;
+        const childNodes = parent.childNodes;
+        // Avoid moving the block if it's already at the bottom.
+        if (childNodes[childNodes.length - 1] !== root) {
+          while (root.nextSibling) {
+            parent.insertBefore(root.nextSibling, root);
+          }
         }
-      }
-      if (blockOnly) break;
-      block = block.getParent();
-    } while (block);
+        if (blockOnly) break;
+        block = block.getParent();
+      } while (block);
+    });
   }
 
   /**
