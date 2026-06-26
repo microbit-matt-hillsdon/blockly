@@ -441,6 +441,7 @@ export class Drawer {
         const highlightSvg = this.drawConnectionHighlightPath(elem);
         if (highlightSvg) {
           highlightSvg.style.display = elem.highlighted ? '' : 'none';
+          elem.connectionModel.recomputeAriaContext(highlightSvg);
         }
       }
     }

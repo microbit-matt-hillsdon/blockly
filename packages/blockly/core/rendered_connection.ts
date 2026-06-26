@@ -326,7 +326,7 @@ export class RenderedConnection
    *
    * @param highlightSvg The focusable element for this connection.
    */
-  private recomputeAriaContext(highlightSvg: SVGElement) {
+  recomputeAriaContext(highlightSvg: SVGElement) {
     // Note that output connections don't have highlights so this doesn't need to take them into account.
     const roleDescription =
       this.type === ConnectionType.INPUT_VALUE
