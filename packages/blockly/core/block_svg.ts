@@ -1405,7 +1405,9 @@ export class BlockSvg
       const childNodes = parent.childNodes;
       // Avoid moving the block if it's already at the bottom.
       if (childNodes[childNodes.length - 1] !== root) {
-        parent.appendChild(root);
+        while (root.nextSibling) {
+          parent.insertBefore(root.nextSibling, root);
+        }
       }
       if (blockOnly) break;
       block = block.getParent();
