@@ -1954,6 +1954,16 @@ suite('Blocks', function () {
           assert.equal(label, 'Bubble');
         });
       });
+
+      test('disposing the block while the bubble is opening does not open it', async function () {
+        this.block.setWarningText('Warning');
+        const icon = this.block.getIcon(Blockly.icons.WarningIcon.TYPE);
+        const opening = icon.setBubbleVisible(true);
+        this.block.dispose();
+        await opening;
+
+        assert.isFalse(icon.bubbleIsVisible());
+      });
     });
 
     suite('Warning icons and collapsing', function () {
