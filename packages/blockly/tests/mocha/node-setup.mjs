@@ -121,6 +121,20 @@ function domInterfaceNames(win) {
   return [...names];
 }
 
+// Replace JSDom's animation frames with ones scheduled on the current timers.
+//
+// JSDom runs all of a window's animation frames from one setInterval, created
+// with whatever setInterval is global at the time and reused until no frames
+// are pending. Every test in a worker shares this window, so a frame or focus
+// fixup requested outside a test's fake clock (e.g. in teardown, after sinon
+// is restored) leaves later tests' frames on a timer their clock cannot run.
+// Blockly fires events after a frame, so those tests then see events late or
+// not at all, depending on machine load. JSDom does not support replacing
+// timers underneath it: https://github.com/jsdom/jsdom/issues/4428
+window.requestAnimationFrame = (callback) =>
+  setTimeout(() => callback(window.performance.now()), 1000 / 60);
+window.cancelAnimationFrame = (handle) => clearTimeout(handle);
+
 // Only what JSDom actually provides is installed; anything it does not
 // implement (matchMedia, ResizeObserver, etc) is skipped, and a test
 // that needs one has to stub it.
